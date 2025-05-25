@@ -6,8 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Plus, MessageCircle, User, Users } from "lucide-react"; // Added User and Users for group/individual chat icons
+import { Search, Plus, MessageCircle, User, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatRoom {
   id: string;
@@ -24,7 +25,7 @@ interface ChatRoom {
     sender: {
       name: string;
     };
-    createdAt: string; // Ensure createdAt is part of lastMessage for date-fns
+    createdAt: string;
   };
 }
 
@@ -35,7 +36,6 @@ interface ChatSidebarProps {
 }
 
 export default function ChatSidebar({
-  // Changed to default export for easier use
   selectedChatId,
   onChatSelect,
   onNewChat,
@@ -135,22 +135,21 @@ export default function ChatSidebar({
   }, [chatRooms, searchQuery, session?.user?.id]);
 
   return (
-    <div className="w-80 bg-gradient-to-br from-blue-50 to-white border-r border-blue-100 flex flex-col h-full shadow-lg rounded-r-lg">
+    <div className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full">
       {/* Header Section */}
-      <div className="p-5 border-b border-blue-200 bg-white/80 backdrop-blur-sm rounded-tr-lg">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-extrabold text-gray-800 flex items-center">
-            <MessageCircle className="mr-2 text-blue-600" size={24} />
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+            <MessageCircle className="mr-2 text-blue-500" size={20} />
             Messages
           </h2>
           <Button
             onClick={onNewChat}
-            size="icon" // Changed to icon size for a cleaner look
+            size="icon"
             variant="ghost"
-            className="rounded-full text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200"
-            title="Start New Chat"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <Plus size={22} />
+            <Plus size={20} />
           </Button>
         </div>
 
@@ -158,144 +157,135 @@ export default function ChatSidebar({
         <div className="relative">
           <Search
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            size={18}
+            size={16}
           />
           <Input
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 pr-4 py-2 rounded-full bg-blue-50 border border-blue-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
+            className="pl-9 pr-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
           />
         </div>
       </div>
 
       {/* Chat List Section */}
-      <ScrollArea className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="p-3 space-y-2">
-          {isLoading ? (
-            <div className="text-center py-10 text-gray-500">
-              <MessageCircle
-                size={56}
-                className="mx-auto mb-4 opacity-40 animate-bounce text-blue-400"
-              />
-              <p className="font-semibold text-lg">Loading conversations...</p>
-              <p className="text-sm">Please wait a moment.</p>
-            </div>
-          ) : error ? (
-            <div className="text-center py-10 text-red-500">
-              <MessageCircle size={56} className="mx-auto mb-4 opacity-50" />
-              <p className="font-semibold text-lg">Error loading chats!</p>
-              <p className="text-sm">{error}</p>
-              <Button
-                onClick={fetchChatRooms}
-                className="mt-4 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-md transition-all duration-200"
-                size="sm"
+      <ScrollArea className="flex-1">
+        <div className="p-2 space-y-1">
+          <AnimatePresence>
+            {isLoading ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-8 text-gray-500 dark:text-gray-400"
               >
-                Try Again
-              </Button>
-            </div>
-          ) : filteredChats.length === 0 ? (
-            <div className="text-center py-10 text-gray-500">
-              <MessageCircle size={56} className="mx-auto mb-4 opacity-40" />
-              <p className="font-semibold text-lg">No conversations found</p>
-              <p className="text-sm">Start a new one or adjust your search.</p>
-              <Button
-                onClick={onNewChat}
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md transition-all duration-200"
-                size="sm"
+                <MessageCircle
+                  size={40}
+                  className="mx-auto mb-3 animate-bounce text-blue-500"
+                />
+                <p className="font-medium">Loading conversations...</p>
+              </motion.div>
+            ) : error ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-8 text-red-500"
               >
-                Start a Chat
-              </Button>
-            </div>
-          ) : (
-            filteredChats.map((chat) => (
-              <div
-                key={chat.id}
-                onClick={() => onChatSelect(chat.id)}
-                className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-200 ease-in-out transform hover:scale-[1.01] shadow-sm
-                  ${
-                    selectedChatId === chat.id
-                      ? "bg-blue-100 border border-blue-300 shadow-md ring-2 ring-blue-300 ring-opacity-50"
-                      : "bg-white hover:bg-gray-50 border border-gray-100"
-                  }`}
+                <MessageCircle size={40} className="mx-auto mb-3" />
+                <p className="font-medium">Error loading chats!</p>
+                <p className="text-sm mt-1">{error}</p>
+                <Button
+                  onClick={fetchChatRooms}
+                  className="mt-4 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                  size="sm"
+                >
+                  Try Again
+                </Button>
+              </motion.div>
+            ) : filteredChats.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-center py-8 text-gray-500 dark:text-gray-400"
               >
-                <div className="relative flex-shrink-0">
-                  <Avatar className="h-14 w-14 border-2 border-white shadow-sm">
-                    {" "}
-                    {/* Larger avatar */}
-                    {chat.isGroup ? (
-                      <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white font-bold text-xl">
-                        <Users size={24} /> {/* Group icon */}
-                      </AvatarFallback>
-                    ) : (
-                      <>
-                        <AvatarImage
-                          src={
-                            getChatAvatar(chat) ||
-                            `https://placehold.co/56x56/a78bfa/ffffff?text=${
-                              getChatDisplayName(chat)[0]
-                            }`
-                          }
-                          alt={getChatDisplayName(chat)}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.onerror = null; // Prevent infinite loop
-                            target.src = `https://placehold.co/56x56/a78bfa/ffffff?text=${
-                              getChatDisplayName(chat)[0]
-                            }`;
-                          }}
-                        />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-xl">
-                          {getChatDisplayName(chat)[0]}
+                <MessageCircle size={40} className="mx-auto mb-3" />
+                <p className="font-medium">No conversations found</p>
+                <p className="text-sm mt-1">
+                  Start a new one or adjust your search.
+                </p>
+                <Button
+                  onClick={onNewChat}
+                  className="mt-4 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                  size="sm"
+                >
+                  Start a Chat
+                </Button>
+              </motion.div>
+            ) : (
+              filteredChats.map((chat) => (
+                <motion.div
+                  key={chat.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  onClick={() => onChatSelect(chat.id)}
+                  className={`flex items-center p-3 rounded-xl cursor-pointer transition-all duration-200
+                    ${
+                      selectedChatId === chat.id
+                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    }`}
+                >
+                  <div className="relative flex-shrink-0">
+                    <Avatar className="h-12 w-12 ring-2 ring-gray-100 dark:ring-gray-800">
+                      {chat.isGroup ? (
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                          <Users size={20} />
                         </AvatarFallback>
-                      </>
-                    )}
-                  </Avatar>
-                  {!chat.isGroup && isParticipantOnline(chat) && (
-                    <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-md" />
-                  )}
-                </div>
-
-                <div className="ml-4 flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <h3 className="font-extrabold text-lg text-gray-800 truncate">
-                      {getChatDisplayName(chat)}
-                    </h3>
-                    {chat.lastMessage && chat.lastMessage.createdAt && (
-                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2 font-medium">
-                        {formatDistanceToNow(
-                          new Date(chat.lastMessage.createdAt),
-                          { addSuffix: true }
-                        )}
-                      </span>
+                      ) : (
+                        <>
+                          <AvatarImage
+                            src={getChatAvatar(chat)}
+                            alt={getChatDisplayName(chat)}
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                            {getChatDisplayName(chat)[0]}
+                          </AvatarFallback>
+                        </>
+                      )}
+                    </Avatar>
+                    {!chat.isGroup && isParticipantOnline(chat) && (
+                      <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900" />
                     )}
                   </div>
-                  <p className="text-sm text-gray-600 truncate">
-                    {getLastMessagePreview(chat)}
-                  </p>
-                </div>
-              </div>
-            ))
-          )}
+                  <div className="ml-3 flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {getChatDisplayName(chat)}
+                      </p>
+                      {chat.lastMessage && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                          {formatDistanceToNow(
+                            new Date(chat.lastMessage.createdAt),
+                            {
+                              addSuffix: true,
+                            }
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                      {getLastMessagePreview(chat)}
+                    </p>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </AnimatePresence>
         </div>
       </ScrollArea>
-      {/* Custom Scrollbar Style (optional, can be moved to global CSS) */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #a7d3f8; /* Lighter blue */
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #60a5fa; /* Darker blue on hover */
-        }
-      `}</style>
     </div>
   );
 }

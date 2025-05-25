@@ -23,13 +23,17 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="h-full">
+      <body className={`${inter.className} min-h-full bg-gray-50`}>
         <Providers>
-          <Navbar />
-          <div className="flex">
+          <div className="flex h-full">
             <Sidebar />
-            <div className="flex-1 pl-80 mt-16">{children}</div>
+            <div className="flex-1 flex flex-col min-h-screen">
+              <Navbar />
+              <main className="flex-1 pt-16 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+                {children}
+              </main>
+            </div>
           </div>
         </Providers>
       </body>

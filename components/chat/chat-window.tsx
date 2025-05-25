@@ -18,9 +18,12 @@ import {
   User,
   Users,
   MessageCircle,
+  Paperclip,
+  Smile,
 } from "lucide-react"; // Added User and Users for avatar fallbacks
 import { getSocket } from "@/lib/socket";
 import { encryptMessage, decryptMessage } from "@/lib/encryption";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   id: string;
@@ -58,6 +61,7 @@ export default function ChatWindow({ chatRoomId, chatRoom }: ChatWindowProps) {
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchMessages();
@@ -273,208 +277,124 @@ export default function ChatWindow({ chatRoomId, chatRoom }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gray-50 rounded-l-lg shadow-lg">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* Chat Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex items-center justify-between rounded-tl-lg shadow-md">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <div className="flex items-center space-x-3">
-          <div className="relative flex-shrink-0">
-            <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-              {chatRoom.isGroup ? (
-                <AvatarFallback className="bg-gradient-to-br from-purple-400 to-purple-600 text-white font-bold text-lg">
-                  <Users size={20} />
-                </AvatarFallback>
-              ) : (
-                <>
-                  <AvatarImage
-                    src={
-                      getChatAvatar() ||
-                      `https://placehold.co/48x48/60a5fa/ffffff?text=${
-                        getChatDisplayName()[0]
-                      }`
-                    }
-                    alt={getChatDisplayName()}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.onerror = null;
-                      target.src = `https://placehold.co/48x48/60a5fa/ffffff?text=${
-                        getChatDisplayName()[0]
-                      }`;
-                    }}
-                  />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-400 to-blue-600 text-white font-bold text-lg">
-                    {getChatDisplayName()[0]}
-                  </AvatarFallback>
-                </>
-              )}
-            </Avatar>
-            {!chatRoom.isGroup && isUserOnline() && (
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white shadow-sm" />
-            )}
-          </div>
+          <Avatar className="h-10 w-10 ring-2 ring-gray-100 dark:ring-gray-800">
+            <AvatarImage src={getChatAvatar()} alt={getChatDisplayName()} />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+              {getChatDisplayName()[0]}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <h3 className="font-bold text-xl">{getChatDisplayName()}</h3>
-            <p className="text-sm opacity-90">
-              {chatRoom.isGroup
-                ? "Group Chat"
-                : isUserOnline()
-                ? "Online"
-                : "Offline"}
+            <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+              {getChatDisplayName()}
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {isUserOnline() ? "Online" : "Offline"}
             </p>
           </div>
         </div>
-
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center space-x-2">
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-blue-500/30 rounded-full transition-colors duration-200"
-            title="Voice Call"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <Phone size={20} />
+            <Phone className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-blue-500/30 rounded-full transition-colors duration-200"
-            title="Video Call"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <Video size={20} />
+            <Video className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="text-white hover:bg-blue-500/30 rounded-full transition-colors duration-200"
-            title="More Options"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <MoreVertical size={20} />
+            <MoreVertical className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
       {/* Messages Area */}
-      <ScrollArea className="flex-1 p-4 bg-gradient-to-b from-gray-50 to-gray-100 custom-scrollbar">
-        <div className="space-y-4 max-w-3xl mx-auto">
-          {messages.length === 0 ? (
-            <div className="text-center py-16 text-gray-500">
-              <MessageBubblePlaceholder /> {/* Placeholder for no messages */}
-              <p className="mt-4 text-lg font-semibold">No messages yet!</p>
-              <p className="text-sm">Start the conversation by typing below.</p>
-            </div>
-          ) : (
-            messages.map((message, index) => {
-              const isOwn = message.sender.id === session?.user?.id;
-              const showAvatar =
-                index === 0 ||
-                messages[index - 1].sender.id !== message.sender.id ||
-                isOwn !== (messages[index - 1].sender.id === session?.user?.id); // Show avatar if sender changes or if it's the first message from a new sender block
-
-              return (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  isOwn={isOwn}
-                  showAvatar={showAvatar}
-                />
-              );
-            })
-          )}
-
-          {/* Typing Indicator */}
-          {typingUsers.length > 0 && (
-            <div className="flex items-center space-x-2 text-gray-600 animate-fade-in-up">
-              <div className="flex space-x-1">
-                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-pulse-dot" />
-                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-pulse-dot delay-100" />
-                <div className="w-2.5 h-2.5 bg-blue-400 rounded-full animate-pulse-dot delay-200" />
-              </div>
-              <span className="text-sm font-medium">
-                {getTypingUserNames()}
-              </span>
-            </div>
-          )}
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
+          <AnimatePresence>
+            {messages.map((message) => (
+              <MessageBubble
+                key={message.id}
+                message={message}
+                isOwn={message.sender.id === session?.user?.id}
+              />
+            ))}
+          </AnimatePresence>
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
+      {/* Typing Indicator */}
+      <AnimatePresence>
+        {typingUsers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400"
+          >
+            {getTypingUserNames()} {typingUsers.length === 1 ? "is" : "are"}{" "}
+            typing...
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Message Input */}
-      <form
-        onSubmit={handleSendMessage}
-        className="p-4 bg-white border-t border-gray-200 rounded-bl-lg shadow-inner"
-      >
-        <div className="flex items-center space-x-3 max-w-3xl mx-auto">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+        <form
+          onSubmit={handleSendMessage}
+          className="flex items-center space-x-2"
+        >
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+          >
+            <Paperclip className="h-5 w-5" />
+          </Button>
           <Input
+            ref={inputRef}
+            type="text"
             value={newMessage}
             onChange={(e) => {
               setNewMessage(e.target.value);
               handleTyping();
             }}
-            placeholder="Type your message here..."
-            className="flex-1 py-2.5 px-4 rounded-full bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-blue-300 focus:border-blue-400 transition-all duration-200 text-gray-800 placeholder-gray-400 shadow-sm"
-            disabled={isSending}
+            placeholder="Type a message..."
+            className="flex-1 rounded-full bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
           />
           <Button
-            type="submit"
-            disabled={!newMessage.trim() || isSending}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-full h-11 w-11 flex items-center justify-center shadow-md transition-all duration-200 transform hover:scale-105"
-            title="Send Message"
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
           >
-            <Send size={20} />
+            <Smile className="h-5 w-5" />
           </Button>
-        </div>
-      </form>
-
-      {/* Custom Scrollbar and Animation Styles */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #a7d3f8; /* Lighter blue */
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #60a5fa; /* Darker blue on hover */
-        }
-
-        @keyframes pulse-dot {
-          0%,
-          100% {
-            transform: scale(0.8);
-            opacity: 0.5;
-          }
-          50% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-        .animate-pulse-dot {
-          animation: pulse-dot 1.2s infinite ease-in-out;
-        }
-        .animate-pulse-dot.delay-100 {
-          animation-delay: 0.1s;
-        }
-        .animate-pulse-dot.delay-200 {
-          animation-delay: 0.2s;
-        }
-
-        @keyframes fadeInFromBottom {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fade-in-up {
-          animation: fadeInFromBottom 0.3s ease-out forwards;
-        }
-      `}</style>
+          <Button
+            type="submit"
+            size="icon"
+            disabled={!newMessage.trim() || isSending}
+            className="rounded-full bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="h-5 w-5" />
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
