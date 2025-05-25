@@ -4,18 +4,56 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/providers";
-import { Navbar } from "@/components/navbar";
 import { PostCard } from "@/components/post-card";
 import { CreatePostModal } from "@/components/create-post-modal";
 import { LearningRewards } from "@/components/learning-rewards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PenTool, BookOpen, Zap, Target } from "lucide-react";
+import { UserSuggestions } from "@/components/user-suggestions";
+import RightSidebarCard from "@/components/rightSidebarCard";
+
+interface Post {
+  id: string;
+  content: string;
+  image?: string;
+  createdAt: Date;
+  author: {
+    id: string;
+    name: string;
+    image?: string;
+  };
+  _count: {
+    likes: number;
+    comments: number;
+  };
+  isLiked?: boolean;
+  comments?: Array<{
+    id: string;
+    content: string;
+    createdAt: Date;
+    author: {
+      id: string;
+      name: string;
+      image?: string;
+    };
+    replies?: Array<{
+      id: string;
+      content: string;
+      createdAt: Date;
+      author: {
+        id: string;
+        name: string;
+        image?: string;
+      };
+    }>;
+  }>;
+}
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const { createPostModalOpen, setCreatePostModalOpen } = useAppContext();
 
   useEffect(() => {
@@ -63,9 +101,22 @@ export default function HomePage() {
     }
   };
 
-  const handleComment = (postId: string) => {
-    // TODO: Implement comment functionality
-    console.log("Comment on post:", postId);
+  const handleComment = async (postId: string) => {
+    try {
+      // Fetch the updated post data
+      const response = await fetch(`/api/posts/${postId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch updated post");
+      }
+      const updatedPost = await response.json();
+
+      // Update the posts array with the new post data
+      setPosts((currentPosts) =>
+        currentPosts.map((post) => (post.id === postId ? updatedPost : post))
+      );
+    } catch (error) {
+      console.error("Error updating post:", error);
+    }
   };
 
   const handleShare = (postId: string) => {
@@ -87,12 +138,10 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-8">
             {/* Create Post Button */}
             <Card className="mb-6">
               <CardContent className="p-4">
@@ -157,21 +206,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <LearningRewards />
-
-            <Card className="mt-6">
-              <CardContent className="p-4">
-                <div className="flex items-center space-x-2 text-blue-600 mb-2">
-                  <Target size={16} />
-                  <span className="font-medium">
-                    Keep your learning streak going!
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Right Sidebar */}
+          <RightSidebarCard />
         </div>
       </div>
 

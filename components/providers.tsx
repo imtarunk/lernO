@@ -1,8 +1,9 @@
 "use client";
 
-import type React from "react";
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "@/components/ui/toaster";
+import { UserProvider } from "./user-context";
 
 interface UserState {
   id: string;
@@ -55,7 +56,10 @@ function AppProvider({ children }: { children: ReactNode }) {
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
-      <AppProvider>{children}</AppProvider>
+      <UserProvider>
+        <Toaster />
+        <AppProvider>{children}</AppProvider>
+      </UserProvider>
     </SessionProvider>
   );
 }
