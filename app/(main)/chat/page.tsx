@@ -78,7 +78,7 @@ export default function ChatPage() {
 
   if (status === "loading") {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="flex flex-col items-center p-8 bg-white rounded-2xl shadow-xl animate-fade-in">
           <Loader2 className="w-14 h-14 text-blue-600 animate-spin-slow mb-4" />
           <h2 className="text-2xl font-semibold text-gray-800">
@@ -93,10 +93,10 @@ export default function ChatPage() {
   if (!session) return null;
 
   return (
-    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-2 sm:p-4">
-      <div className="h-full grid grid-cols-1 lg:grid-cols-12 rounded-2xl overflow-hidden shadow-2xl bg-white">
+    <div className="h-screen bg-gradient-to-br from-blue-50 to-indigo-100 overflow-hidden">
+      <div className="h-full grid grid-cols-1 lg:grid-cols-12 shadow-2xl bg-white ">
         {/* Sidebar */}
-        <div className="col-span-12 lg:col-span-4 border-r border-blue-100 overflow-hidden">
+        <div className="col-span-12 lg:col-span-4 border-r border-blue-100 h-full overflow-hidden">
           <ChatSidebar
             onChatSelect={handleChatSelect}
             onNewChat={handleNewChat}
@@ -105,9 +105,9 @@ export default function ChatPage() {
         </div>
 
         {/* Chat Window */}
-        <div className="col-span-12 lg:col-span-8 bg-gray-50 flex flex-col">
+        <div className="col-span-12 lg:col-span-8 bg-gray-50 h-full flex flex-col overflow-hidden">
           {isChatRoomLoading ? (
-            <div className="flex-1 flex items-center justify-center">
+            <div className="h-full flex items-center justify-center">
               <div className="flex flex-col items-center p-6 bg-white rounded-xl shadow-lg">
                 <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-3" />
                 <p className="text-lg font-medium text-gray-700">
@@ -116,7 +116,7 @@ export default function ChatPage() {
               </div>
             </div>
           ) : chatRoomError ? (
-            <div className="flex-1 flex items-center justify-center text-center p-4">
+            <div className="h-full flex items-center justify-center text-center p-4">
               <div className="bg-red-50 border border-red-200 text-red-700 p-6 rounded-lg shadow-md">
                 <MessageCircle className="w-12 h-12 mx-auto mb-4 opacity-70" />
                 <h3 className="text-xl font-semibold mb-2">
@@ -139,7 +139,7 @@ export default function ChatPage() {
               chatRoom={selectedChatRoom}
             />
           ) : (
-            <div className="flex-1 flex items-center justify-center p-4">
+            <div className="h-full flex items-center justify-center p-4">
               <div className="text-center p-8 bg-white rounded-xl shadow-md animate-fade-in">
                 <MessageCircle className="w-16 h-16 text-blue-400 mx-auto mb-6 opacity-80" />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">

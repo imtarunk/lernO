@@ -12,43 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PenTool, BookOpen, Zap, Target } from "lucide-react";
 import { UserSuggestions } from "@/components/user-suggestions";
 import RightSidebarCard from "@/components/rightSidebarCard";
-
-interface Post {
-  id: string;
-  content: string;
-  image?: string;
-  createdAt: Date;
-  author: {
-    id: string;
-    name: string;
-    image?: string;
-  };
-  _count: {
-    likes: number;
-    comments: number;
-  };
-  isLiked?: boolean;
-  comments?: Array<{
-    id: string;
-    content: string;
-    createdAt: Date;
-    author: {
-      id: string;
-      name: string;
-      image?: string;
-    };
-    replies?: Array<{
-      id: string;
-      content: string;
-      createdAt: Date;
-      author: {
-        id: string;
-        name: string;
-        image?: string;
-      };
-    }>;
-  }>;
-}
+import { Post } from "@/app/types/type";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -207,7 +171,9 @@ export default function HomePage() {
           </div>
 
           {/* Right Sidebar */}
-          <RightSidebarCard />
+          <div className="overflow-auto">
+            <RightSidebarCard />
+          </div>
         </div>
       </div>
 

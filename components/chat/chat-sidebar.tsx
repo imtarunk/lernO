@@ -135,7 +135,7 @@ export default function ChatSidebar({
   }, [chatRooms, searchQuery, session?.user?.id]);
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full">
+    <div className="w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col h-full ">
       {/* Header Section */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between mb-4">
@@ -170,7 +170,7 @@ export default function ChatSidebar({
 
       {/* Chat List Section */}
       <ScrollArea className="flex-1">
-        <div className="p-2 space-y-1">
+        <div className="p-2 space-y-1 ">
           <AnimatePresence>
             {isLoading ? (
               <motion.div
@@ -276,7 +276,7 @@ export default function ChatSidebar({
                         </span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 truncate w-full">
                       {getLastMessagePreview(chat)}
                     </p>
                   </div>

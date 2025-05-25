@@ -10,7 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Home, User, BookOpen, Bell, Moon, Search, Menu } from "lucide-react";
+import {
+  Home,
+  User,
+  BookOpen,
+  Bell,
+  Moon,
+  Search,
+  Menu,
+  Gamepad2,
+} from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
@@ -64,6 +73,7 @@ export function Navbar() {
             <Button
               variant="ghost"
               className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => router.push("/home")}
             >
               <Home size={20} />
               <span>Home</span>
@@ -71,13 +81,15 @@ export function Navbar() {
             <Button
               variant="ghost"
               className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => router.push("/playground")}
             >
-              <User size={20} />
-              <span>Profile</span>
+              <Gamepad2 size={20} />
+              <span>Playground</span>
             </Button>
             <Button
               variant="ghost"
               className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 rounded-lg"
+              onClick={() => router.push("/learning")}
             >
               <BookOpen size={20} />
               <span>Learning</span>
