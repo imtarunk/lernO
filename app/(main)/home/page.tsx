@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import { useAppContext } from "@/components/providers";
 import { PostCard } from "@/components/post-card";
 import { CreatePostModal } from "@/components/create-post-modal";
-import { LearningRewards } from "@/components/learning-rewards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PenTool, BookOpen, Zap, Target, Rocket, Plus } from "lucide-react";
-import { UserSuggestions } from "@/components/user-suggestions";
 import RightSidebarCard from "@/components/rightSidebarCard";
 import { Post } from "@/app/types/type";
 import { useToast } from "@/hooks/use-toast";
@@ -177,16 +175,51 @@ export default function HomePage() {
                 {/* Switch for filtering */}
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <label
-                    htmlFor="show-tasks-switch"
-                    className="text-sm font-medium text-gray-600 select-none"
+                    htmlFor="custom-switch"
+                    className="text-sm font-medium text-gray-600 dark:text-gray-300 select-none"
                   >
                     {showOnlyTasks ? "Showing only Tasks" : "Showing All"}
                   </label>
-                  <Switch
-                    checked={showOnlyTasks}
-                    onCheckedChange={setShowOnlyTasks}
-                    id="show-tasks-switch"
-                  />
+
+                  <div className="relative flex items-center text-[12px] font-sans text-gray-500">
+                    <input
+                      id="custom-switch"
+                      type="checkbox"
+                      className="peer hidden"
+                      checked={showOnlyTasks}
+                      onChange={() => setShowOnlyTasks((prev) => !prev)}
+                    />
+                    <label
+                      htmlFor="custom-switch"
+                      className="flex items-center cursor-pointer select-none"
+                    >
+                      <span className="mr-1">Toggle:</span>
+                      <span className="relative flex items-center">
+                        <span className="w-[25px] h-[15px] rounded-full bg-[#05012c] peer-checked:bg-[#ffb500] transition-colors duration-150 ease-out"></span>
+                        <span className="absolute left-[1px] top-[1px] w-[13px] h-[13px] bg-white rounded-[13px] shadow-[0_3px_1px_rgba(37,34,71,0.05),0_2px_2px_rgba(37,34,71,0.1),0_3px_3px_rgba(37,34,71,0.05)] transition-transform duration-150 ease-out peer-checked:translate-x-[10px]"></span>
+                      </span>
+                    </label>
+                    <span className="ml-2 font-bold relative w-[25px] h-[15px] overflow-hidden">
+                      <span
+                        className={`absolute top-0 left-0 transition-all duration-150 ${
+                          showOnlyTasks
+                            ? "opacity-0 -translate-y-full"
+                            : "opacity-100 translate-y-0"
+                        }`}
+                      >
+                        Off
+                      </span>
+                      <span
+                        className={`absolute top-0 left-0 transition-all duration-150 ${
+                          showOnlyTasks
+                            ? "opacity-100 translate-y-0"
+                            : "opacity-0 translate-y-full"
+                        }`}
+                      >
+                        On
+                      </span>
+                    </span>
+                  </div>
                 </div>
               </div>
               {filteredPosts.length === 0 && (

@@ -4,15 +4,23 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Heart, MessageCircle, Share, MoreHorizontal } from "lucide-react";
+import {
+  Heart,
+  MessageCircle,
+  Share,
+  MoreHorizontal,
+  ZapIcon,
+  Zap,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { CommentSection } from "./comment-section";
 import { PostCardProps } from "@/app/types/type";
 import { LinkPreview } from "@/components/link-preview";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+
 import axios from "axios";
+import BidButton from "./ui/bidButton";
 
 export function PostCard({
   post,
@@ -237,47 +245,53 @@ export function PostCard({
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
-          <div className="flex items-center space-x-4">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleLike}
-              className={`flex items-center space-x-2 rounded-full px-4 transition ${
-                isLiked
-                  ? "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  : "text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-              }`}
-            >
-              <Heart
-                size={16}
-                fill={isLiked ? "currentColor" : "none"}
-                stroke="currentColor"
-                strokeWidth={1.5}
-              />
-              <span className="font-medium">{likeCount || 0}</span>
-            </Button>
+        <div className=" items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800 w-full flex flex-row">
+          <div className="flex items-center space-x-4 justify-between w-full flex-row">
+            <div className="flex items-center space-x-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleLike}
+                className={`flex items-center space-x-2 rounded-full px-4 transition ${
+                  isLiked
+                    ? "text-yellow-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
+                    : "text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                }`}
+              >
+                <Zap
+                  size={16}
+                  fill={isLiked ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  strokeWidth={1.5}
+                />
+                <span className="font-medium">{likeCount || 0}</span>
+              </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowComments(!showComments)}
-              className="flex items-center space-x-2 text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full px-4"
-            >
-              <MessageCircle size={16} />
-              <span className="font-medium">{post._count.comments}</span>
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowComments(!showComments)}
+                className="flex items-center space-x-2 text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full px-4"
+              >
+                <MessageCircle size={16} />
+                <span className="font-medium">{post._count.comments}</span>
+              </Button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onShare(post.id)}
-              className="flex items-center space-x-2 text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full px-4"
-            >
-              <Share size={16} />
-              <span className="font-medium">Share</span>
-            </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onShare(post.id)}
+                className="flex items-center space-x-2 text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full px-4"
+              >
+                <Share size={16} />
+                <span className="font-medium">Share</span>
+              </Button>
+            </div>
+
+            {post.type === "task" && (
+              <BidButton satAmount={post.content[0].bidAmount} />
+            )}
           </div>
         </div>
 
