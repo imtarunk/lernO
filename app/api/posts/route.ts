@@ -19,17 +19,9 @@ export async function GET() {
         },
         _count: {
           select: {
-            likes: true,
             comments: true,
           },
         },
-        likes: userId
-          ? {
-              where: {
-                userId: userId,
-              },
-            }
-          : false,
         comments: {
           where: {
             parentId: null, // Only get top-level comments
@@ -64,11 +56,12 @@ export async function GET() {
       },
     });
 
-    // Transform the posts to include isLiked status
+    // Transform the posts to include isLiked status and likedUserIds
     const transformedPosts = posts.map((post) => ({
       ...post,
-      isLiked: post.likes && post.likes.length > 0,
-      likes: undefined, // Remove the likes array since we only need the count
+      likedUserIds: post.likes,
+      isLiked: userId ? post.likes.some((like) => like === userId) : false,
+      likes: undefined, // Remove the likes array since we only need the count and userIds
     }));
 
     return NextResponse.json(transformedPosts);
@@ -124,7 +117,6 @@ export async function POST(request: Request) {
         },
         _count: {
           select: {
-            likes: true,
             comments: true,
           },
         },

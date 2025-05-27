@@ -245,26 +245,6 @@ async function main() {
   ]);
 
   // Create likes
-  await Promise.all([
-    prisma.like.create({
-      data: {
-        userId: bob.id,
-        postId: posts[0].id,
-      },
-    }),
-    prisma.like.create({
-      data: {
-        userId: carol.id,
-        postId: posts[0].id,
-      },
-    }),
-    prisma.like.create({
-      data: {
-        userId: alice.id,
-        postId: posts[1].id,
-      },
-    }),
-  ]);
 
   // Create follows
   await Promise.all([

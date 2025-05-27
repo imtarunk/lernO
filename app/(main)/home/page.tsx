@@ -41,6 +41,7 @@ export default function HomePage() {
     try {
       const response = await fetch("/api/posts");
       const data = await response.json();
+      console.log("data", data);
       setPosts(data);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -69,6 +70,7 @@ export default function HomePage() {
           image,
         }),
       });
+      console.log("response", response);
 
       if (response.ok) {
         toast({
@@ -95,6 +97,7 @@ export default function HomePage() {
   const handleLike = async (postId: string) => {
     try {
       await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      fetchPosts(); // Refresh posts after like/unlike
     } catch (error) {
       console.error("Error liking post:", error);
     }
@@ -215,6 +218,8 @@ export default function HomePage() {
                   key={post.id}
                   post={post}
                   onLike={handleLike}
+                  isPostLiked={post.isLiked}
+                  likes={post.likedUserIds.length}
                   onComment={handleComment}
                   onShare={handleShare}
                 />

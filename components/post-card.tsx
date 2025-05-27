@@ -10,10 +10,22 @@ import { useRouter } from "next/navigation";
 import { CommentSection } from "./comment-section";
 import { PostCardProps } from "@/app/types/type";
 import { LinkPreview } from "@/components/link-preview";
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import axios from "axios";
 
-export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
-  const [isLiked, setIsLiked] = useState(post.isLiked || false);
-  const [likeCount, setLikeCount] = useState(post._count.likes);
+export function PostCard({
+  post,
+  onLike,
+  onComment,
+  onShare,
+  isPostLiked,
+  likes,
+}: PostCardProps) {
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const [isLiked, setIsLiked] = useState(isPostLiked);
+  const [likeCount, setLikeCount] = useState(likes || 0);
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState(
     (post.comments || []).map((comment) => ({
@@ -26,29 +38,23 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
     }))
   );
   const router = useRouter();
-  console.log(post);
 
   const handleLike = async () => {
     try {
-      const response = await fetch(`/api/posts/${post.id}/like`, {
-        method: "POST",
-      });
+      const response = await axios.post(`/api/posts/${post.id}/like`);
 
-      if (!response.ok) {
-        throw new Error("Failed to like/unlike post");
+      if (response.status !== 200) {
+        throw new Error("Failed to like / unlike post");
       }
 
-      // Update local state
-      setIsLiked(!isLiked);
-      setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
+      const data = response.data;
 
-      // Notify parent component
-      onLike(post.id);
+      setIsLiked(data.isLiked);
+      console.log("data.likeUsers.length", data.likeUsers.length);
+      setLikeCount(data.likeUsers.length);
+      console.log("likeCount", likeCount);
     } catch (error) {
       console.error("Error liking/unliking post:", error);
-      // Revert local state if the API call fails
-      setIsLiked(isLiked);
-      setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
     }
   };
 
@@ -234,17 +240,23 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
         <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center space-x-4">
             <Button
+              type="button"
               variant="ghost"
               size="sm"
               onClick={handleLike}
-              className={`flex items-center space-x-2 rounded-full px-4 ${
+              className={`flex items-center space-x-2 rounded-full px-4 transition ${
                 isLiked
                   ? "text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                   : "text-gray-500 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              <Heart size={16} fill={isLiked ? "currentColor" : "none"} />
-              <span className="font-medium">{likeCount}</span>
+              <Heart
+                size={16}
+                fill={isLiked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={1.5}
+              />
+              <span className="font-medium">{likeCount || 0}</span>
             </Button>
 
             <Button

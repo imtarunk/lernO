@@ -45,10 +45,13 @@ export interface PostCardProps {
         };
       }>;
     }>;
+    likes?: string[];
   };
   onLike: (postId: string) => void;
   onComment: (postId: string) => void;
   onShare: (postId: string) => void;
+  isPostLiked: boolean;
+  likes: number;
 }
 
 interface PostContent {
@@ -99,4 +102,6 @@ export interface Post {
       };
     }>;
   }>;
+  likedUserIds?: string[];
+  likes?: string[];
 }
