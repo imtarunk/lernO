@@ -9,18 +9,22 @@ import { CreatePostModal } from "@/components/create-post-modal";
 import { LearningRewards } from "@/components/learning-rewards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PenTool, BookOpen, Zap, Target, Rocket } from "lucide-react";
+import { PenTool, BookOpen, Zap, Target, Rocket, Plus } from "lucide-react";
 import { UserSuggestions } from "@/components/user-suggestions";
 import RightSidebarCard from "@/components/rightSidebarCard";
 import { Post } from "@/app/types/type";
 import { useToast } from "@/hooks/use-toast";
+import { CreateTaskModal } from "@/components/create-task-modal";
+import { Switch } from "@/components/ui/switch";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const { createPostModalOpen, setCreatePostModalOpen } = useAppContext();
+  const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
   const { toast } = useToast();
+  const [showOnlyTasks, setShowOnlyTasks] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -119,6 +123,12 @@ export default function HomePage() {
     console.log("Share post:", postId);
   };
 
+  // Filter posts based on the switch
+  const filteredPosts = posts.filter((post) => {
+    if (showOnlyTasks) return post.type === "task";
+    return true; // show all
+  });
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -142,13 +152,13 @@ export default function HomePage() {
               <CardContent className="p-4 flex flex-row">
                 <Button
                   onClick={() => setCreatePostModalOpen(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700 rounded-r-none"
+                  className="w-full bg-blue-500 hover:bg-blue-600 rounded-r-none"
                 >
-                  <PenTool size={16} className="mr-2" />
-                  Post Update
+                  <Plus size={16} className="mr-2" />
+                  Create post
                 </Button>
                 <Button
-                  onClick={() => setCreatePostModalOpen(true)}
+                  onClick={() => setCreateTaskModalOpen(true)}
                   className="w-full bg-purple-500 hover:bg-purple-600 rounded-l-none"
                 >
                   <Rocket size={16} className="mr-2" />
@@ -159,8 +169,24 @@ export default function HomePage() {
 
             {/* Feed Header */}
             <div className="text-center mb-6">
-              <h1 className="text-2xl font-bold mb-2">Feed</h1>
-              {posts.length === 0 && (
+              <div className="flex items-center justify-between">
+                <h1 className="text-2xl font-bold mb-2">Feed</h1>
+                {/* Switch for filtering */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <label
+                    htmlFor="show-tasks-switch"
+                    className="text-sm font-medium text-gray-600 select-none"
+                  >
+                    {showOnlyTasks ? "Showing only Tasks" : "Showing All"}
+                  </label>
+                  <Switch
+                    checked={showOnlyTasks}
+                    onCheckedChange={setShowOnlyTasks}
+                    id="show-tasks-switch"
+                  />
+                </div>
+              </div>
+              {filteredPosts.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-gray-400 mb-4">
                     <Target size={48} className="mx-auto" />
@@ -184,7 +210,7 @@ export default function HomePage() {
 
             {/* Posts Feed */}
             <div className="space-y-4">
-              {posts.map((post: any) => (
+              {filteredPosts.map((post: any) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -216,10 +242,15 @@ export default function HomePage() {
       </div>
 
       <CreatePostModal
-        type="task || post"
+        type="post"
         isOpen={createPostModalOpen}
         onClose={() => setCreatePostModalOpen(false)}
         onSubmit={handleCreatePost}
+      />
+      <CreateTaskModal
+        open={createTaskModalOpen}
+        onClose={() => setCreateTaskModalOpen(false)}
+        onTaskCreated={fetchPosts}
       />
     </div>
   );

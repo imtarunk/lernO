@@ -165,21 +165,59 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
           Array.isArray(post.content) &&
           post.content[0] && (
             <div className="mb-4">
-              {post.content[0].title && (
-                <h3 className="text-lg font-bold mb-1">
-                  {post.content[0].title}
-                </h3>
-              )}
-              {post.content[0].description && (
-                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words mb-2">
-                  {post.content[0].description}
-                </p>
-              )}
-              {post.content[0].dueDate && (
-                <div className="text-xs text-gray-500 mb-2">
-                  Due: {new Date(post.content[0].dueDate).toLocaleDateString()}
+              <h3 className="text-lg font-bold mb-1">
+                {post.content[0].title || (
+                  <span className="italic text-gray-400">
+                    No title provided
+                  </span>
+                )}
+              </h3>
+              <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words mb-2">
+                {post.content[0].description || (
+                  <span className="italic text-gray-400">
+                    No description provided
+                  </span>
+                )}
+              </p>
+              <div className="grid grid-cols-2 gap-4 mb-2">
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">Points:</span>{" "}
+                  {post.content[0].points ?? (
+                    <span className="italic text-gray-400">N/A</span>
+                  )}
                 </div>
-              )}
+                <div className="text-sm text-gray-600">
+                  <span className="font-semibold">Bid Amount:</span> $
+                  {post.content[0].bidAmount ?? (
+                    <span className="italic text-gray-400">N/A</span>
+                  )}
+                </div>
+              </div>
+              <div className="text-sm text-gray-500 mb-2">
+                Expires:{" "}
+                {post.content[0].expiry ? (
+                  new Date(post.content[0].expiry).toLocaleString()
+                ) : (
+                  <span className="italic text-gray-400">N/A</span>
+                )}
+              </div>
+              <div className="mt-2">
+                <h4 className="text-sm font-semibold mb-1">Requirements:</h4>
+                {post.content[0].requirements &&
+                post.content[0].requirements.length > 0 ? (
+                  <ul className="list-disc list-inside text-sm text-gray-600">
+                    {post.content[0].requirements.map(
+                      (req: string, index: number) => (
+                        <li key={index}>{req}</li>
+                      )
+                    )}
+                  </ul>
+                ) : (
+                  <span className="italic text-gray-400">
+                    No requirements provided
+                  </span>
+                )}
+              </div>
             </div>
           )}
         {/* Render image if present */}
