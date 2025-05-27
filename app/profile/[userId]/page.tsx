@@ -23,6 +23,9 @@ import {
   UserPlus,
   UserMinus,
 } from "lucide-react";
+import { LinkPreview } from "@/components/link-preview";
+import { Post as PostType } from "@/app/types/type";
+import FollowingCard from "@/components/followingCard";
 
 // Mock data for skills and associated people
 const skills = [
@@ -72,6 +75,12 @@ const associatedPeople = [
     company: "Microsoft",
   },
 ];
+
+interface PostContent {
+  text?: string;
+  tags?: string[];
+  link?: string;
+}
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -349,59 +358,94 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {posts.slice(0, 3).map((post) => (
-                    <div
-                      key={post.id}
-                      className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start gap-4">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage
-                            src={profile.image || undefined}
-                            alt={profile.name || "User"}
-                          />
-                          <AvatarFallback>
-                            {profile.name ? profile.name[0] : "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-gray-900">
-                              {profile.name}
-                            </span>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-500 text-sm">
-                              {new Date(post.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="text-gray-800 leading-relaxed mb-3">
-                            {post.content?.[0]?.text}
-                          </p>
-                          {post.image && (
-                            <img
-                              src={post.image}
-                              alt="Post content"
-                              className="rounded-lg max-h-60 w-full object-cover"
+                  {posts.slice(0, 3).map((post) => {
+                    const content = Array.isArray(post.content)
+                      ? (post.content[0] as PostContent)
+                      : null;
+                    return (
+                      <div
+                        key={post.id}
+                        className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start gap-4">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={profile.image || undefined}
+                              alt={profile.name || "User"}
                             />
-                          )}
-                          <div className="flex items-center gap-4 mt-4 text-gray-500">
-                            <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                              <Eye className="w-4 h-4" />
-                              <span className="text-sm">View</span>
-                            </button>
-                            <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                              <MessageCircle className="w-4 h-4" />
-                              <span className="text-sm">Comment</span>
-                            </button>
-                            <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                              <Share2 className="w-4 h-4" />
-                              <span className="text-sm">Share</span>
-                            </button>
+                            <AvatarFallback>
+                              {profile.name ? profile.name[0] : "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-semibold text-gray-900">
+                                {profile.name}
+                              </span>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-500 text-sm">
+                                {new Date(post.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+
+                            {/* Post Content */}
+                            {content && (
+                              <div className="mb-3">
+                                {content.text && (
+                                  <p className="text-gray-800 leading-relaxed mb-2">
+                                    {content.text}
+                                  </p>
+                                )}
+
+                                {/* Tags */}
+                                {content.tags && content.tags.length > 0 && (
+                                  <div className="flex flex-wrap gap-2 mb-2">
+                                    {content.tags.map((tag: string) => (
+                                      <span
+                                        key={tag}
+                                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Link Preview */}
+                                {content.link && (
+                                  <LinkPreview url={content.link} />
+                                )}
+                              </div>
+                            )}
+
+                            {/* Post Image */}
+                            {post.image && (
+                              <img
+                                src={post.image}
+                                alt="Post content"
+                                className="rounded-lg max-h-60 w-full object-cover mb-3"
+                              />
+                            )}
+
+                            <div className="flex items-center gap-4 mt-4 text-gray-500">
+                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                                <Eye className="w-4 h-4" />
+                                <span className="text-sm">View</span>
+                              </button>
+                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                                <MessageCircle className="w-4 h-4" />
+                                <span className="text-sm">Comment</span>
+                              </button>
+                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
+                                <Share2 className="w-4 h-4" />
+                                <span className="text-sm">Share</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {posts.length > 3 && (
                     <div className="text-center pt-4">
                       <Button variant="outline">View all posts</Button>
@@ -414,57 +458,7 @@ export default function ProfilePage() {
 
           {/* Sidebar */}
           <div className="space-y-8">
-            {/* People Associated */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold text-gray-900">
-                  People Associated
-                </h3>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  See all
-                </Button>
-              </div>
-              <div className="space-y-4">
-                {associatedPeople.map((person) => (
-                  <div
-                    key={person.id}
-                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                  >
-                    <div className="relative">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={person.avatar} alt={person.name} />
-                        <AvatarFallback>{person.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm">
-                        <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
-                          <span className="text-white text-xs font-bold">
-                            {person.company === "Google"
-                              ? "G"
-                              : person.company === "Facebook"
-                              ? "F"
-                              : person.company === "GitHub"
-                              ? "G"
-                              : "M"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">
-                        {person.name}
-                      </div>
-                      <div className="text-sm text-gray-500 truncate">
-                        {person.role}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <FollowingCard userId={userId} />
 
             {/* Employment History */}
             <div className="bg-white rounded-2xl shadow-sm p-6">

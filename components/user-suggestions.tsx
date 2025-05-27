@@ -66,7 +66,7 @@ export function UserSuggestions() {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full overflow-y-auto max-h-[400px]">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <Users size={20} />
