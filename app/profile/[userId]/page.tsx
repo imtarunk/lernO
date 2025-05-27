@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { User, useUserContext } from "@/components/user-context";
+import { useUserContext } from "@/components/user-context";
 import { Post } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -23,9 +23,13 @@ import {
   UserPlus,
   UserMinus,
 } from "lucide-react";
-import { LinkPreview } from "@/components/link-preview";
-import { Post as PostType } from "@/app/types/type";
+import { PostCard } from "@/components/post-card";
+import { PostCardProps } from "@/app/types/type";
 import FollowingCard from "@/components/followingCard";
+import { CoverImageUpload } from "@/components/cover-image-upload";
+import { SkillsDrawer } from "@/components/skills-drawer";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/components/ui/use-toast";
 
 // Mock data for skills and associated people
 const skills = [
@@ -82,43 +86,56 @@ interface PostContent {
   link?: string;
 }
 
+interface ProfileUser {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+  coverImage: string | null;
+  points: number;
+  skills: string[];
+  isOnline: boolean;
+  lastSeen: Date | null;
+  createdAt?: Date;
+}
+
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { data: session } = useSession();
-  const { profile, setProfile } = useUserContext();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { setProfile } = useUserContext();
+  const [posts, setPosts] = useState<PostCardProps["post"][]>([]);
   const [editOpen, setEditOpen] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
   const router = useRouter();
+  const [user, setUser] = useState<ProfileUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchPosts = async () => {
+    const res = await fetch(`/api/user/${userId}/posts`);
+    if (res.ok) {
+      const data = await res.json();
+      setPosts(data);
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
       const res = await fetch(`/api/user/${userId}`);
       if (res.ok) {
-        const data: User = await res.json();
-        setProfile(data);
-      }
-    };
-    const fetchPosts = async () => {
-      const res = await fetch(`/api/user/${userId}/posts`);
-      if (res.ok) {
-        const data: Post[] = await res.json();
-        setPosts(data);
-      }
-    };
-    const checkFollowStatus = async () => {
-      if (session?.user?.id && userId) {
-        const res = await fetch(`/api/user/${userId}/follow-status`);
-        if (res.ok) {
-          const { isFollowing } = await res.json();
-          setIsFollowing(isFollowing);
+        const data = await res.json();
+        setUser(data);
+        if (data.email) {
+          setProfile({
+            ...data,
+            email: data.email,
+          });
         }
       }
     };
     fetchProfile();
     fetchPosts();
-    checkFollowStatus();
-  }, [userId, session?.user?.id]);
+    setIsLoading(false);
+  }, [userId, setProfile]);
 
   const handleFollow = async () => {
     try {
@@ -136,7 +153,6 @@ export default function ProfilePage() {
 
   const handleMessage = async () => {
     try {
-      // Create a chat room with the user
       const response = await fetch("/api/chat/rooms", {
         method: "POST",
         headers: {
@@ -157,7 +173,55 @@ export default function ProfilePage() {
     }
   };
 
-  if (!profile) {
+  const handleCoverImageUpdate = (imageUrl: string) => {
+    if (user) {
+      setUser({ ...user, coverImage: imageUrl });
+    }
+  };
+
+  const handleSkillsUpdate = async (skills: string[]) => {
+    try {
+      const response = await fetch(`/api/user/${userId}/skills`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ skills }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update skills");
+      }
+
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+    } catch (error) {
+      console.error("Error updating skills:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update skills. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleLike = (postId: string) => {
+    fetchPosts();
+  };
+
+  const handleComment = (postId: string) => {
+    fetchPosts();
+  };
+
+  const handleShare = (postId: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
+    toast({
+      title: "Success!",
+      description: "Post link copied to clipboard",
+    });
+  };
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="flex items-center gap-2">
@@ -168,7 +232,11 @@ export default function ProfilePage() {
     );
   }
 
-  const isOwnProfile = session?.user?.id === profile.id;
+  if (!user) {
+    return <div>User not found</div>;
+  }
+
+  const isOwnProfile = session?.user?.id === userId;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -180,11 +248,28 @@ export default function ProfilePage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
               {/* Header with gradient background */}
-              <div className="h-48 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300 relative">
-                <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
-                  <MoreHorizontal className="w-5 h-5 text-white" />
-                </button>
-              </div>
+              {isOwnProfile ? (
+                <CoverImageUpload
+                  userId={userId}
+                  currentCoverImage={user?.coverImage}
+                  onCoverImageUpdate={handleCoverImageUpdate}
+                />
+              ) : (
+                <div
+                  className="h-48 bg-gradient-to-br from-orange-200 via-pink-200 to-purple-300 relative"
+                  style={{
+                    backgroundImage: user?.coverImage
+                      ? `url(${user.coverImage})`
+                      : undefined,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  <button className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors">
+                    <MoreHorizontal className="w-5 h-5 text-white" />
+                  </button>
+                </div>
+              )}
 
               {/* Profile Info */}
               <div className="px-8 pb-8">
@@ -194,14 +279,11 @@ export default function ProfilePage() {
                     onClick={() => (isOwnProfile ? setEditOpen(true) : null)}
                   >
                     <AvatarImage
-                      src={
-                        profile.image ||
-                        "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=128&h=128&fit=crop&crop=face"
-                      }
-                      alt={profile.name || "User"}
+                      src={user?.image || ""}
+                      alt={user?.name || "User"}
                     />
                     <AvatarFallback className="text-2xl font-semibold bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                      {profile.name ? profile.name[0] : "U"}
+                      {user?.name ? user.name[0] : "U"}
                     </AvatarFallback>
                   </Avatar>
 
@@ -209,7 +291,7 @@ export default function ProfilePage() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                       <div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-1">
-                          {profile.name}
+                          {user?.name}
                         </h1>
                         <div className="flex items-center gap-2 text-gray-600 mb-2">
                           <MapPin className="w-4 h-4" />
@@ -272,9 +354,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
                       <div className="flex items-center gap-2">
                         <Mail className="w-4 h-4" />
-                        <span>
-                          @{profile.email?.split("@")[0] || "username"}
-                        </span>
+                        <span>@{user?.email?.split("@")[0] || "username"}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Briefcase className="w-4 h-4" />
@@ -290,7 +370,7 @@ export default function ProfilePage() {
                       <div className="flex items-center gap-2">
                         <Award className="w-4 h-4 text-blue-600" />
                         <span className="font-semibold">
-                          {profile.points ?? 0}
+                          {user?.points ?? 0}
                         </span>
                         <span className="text-gray-600">Points</span>
                       </div>
@@ -303,8 +383,8 @@ export default function ProfilePage() {
                         <Calendar className="w-4 h-4 text-purple-600" />
                         <span className="text-gray-600">
                           Joined{" "}
-                          {profile.createdAt
-                            ? new Date(profile.createdAt).toLocaleDateString(
+                          {user?.createdAt
+                            ? new Date(user.createdAt).toLocaleDateString(
                                 "en-US",
                                 { month: "long", year: "numeric" }
                               )
@@ -321,24 +401,42 @@ export default function ProfilePage() {
             <div className="bg-white rounded-2xl shadow-sm p-8 mt-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-gray-900">Skills</h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  See all
-                </Button>
+                {isOwnProfile && (
+                  <SkillsDrawer
+                    userId={userId}
+                    currentSkills={user?.skills || []}
+                    onSkillsUpdate={handleSkillsUpdate}
+                  />
+                )}
               </div>
-              <div className="flex flex-wrap gap-3">
-                {skills.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium cursor-pointer transition-colors"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+              {user?.skills && user.skills.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {user.skills.map((skill, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full text-sm font-medium cursor-pointer transition-colors"
+                    >
+                      {skill}
+                    </Badge>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg">
+                  {isOwnProfile ? (
+                    <div className="space-y-4">
+                      <p className="text-gray-500">No skills added yet</p>
+                      <SkillsDrawer
+                        userId={userId}
+                        currentSkills={user?.skills || []}
+                        onSkillsUpdate={handleSkillsUpdate}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No skills added yet</p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Posts Section */}
@@ -358,99 +456,15 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {posts.slice(0, 3).map((post) => {
-                    const content = Array.isArray(post.content)
-                      ? (post.content[0] as PostContent)
-                      : null;
-                    return (
-                      <div
-                        key={post.id}
-                        className="border border-gray-100 rounded-xl p-6 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage
-                              src={profile.image || undefined}
-                              alt={profile.name || "User"}
-                            />
-                            <AvatarFallback>
-                              {profile.name ? profile.name[0] : "U"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="font-semibold text-gray-900">
-                                {profile.name}
-                              </span>
-                              <span className="text-gray-400">•</span>
-                              <span className="text-gray-500 text-sm">
-                                {new Date(post.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-
-                            {/* Post Content */}
-                            {content && (
-                              <div className="mb-3">
-                                {content.text && (
-                                  <p className="text-gray-800 leading-relaxed mb-2">
-                                    {content.text}
-                                  </p>
-                                )}
-
-                                {/* Tags */}
-                                {content.tags && content.tags.length > 0 && (
-                                  <div className="flex flex-wrap gap-2 mb-2">
-                                    {content.tags.map((tag: string) => (
-                                      <span
-                                        key={tag}
-                                        className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
-                                      >
-                                        {tag}
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-
-                                {/* Link Preview */}
-                                {content.link && (
-                                  <LinkPreview url={content.link} />
-                                )}
-                              </div>
-                            )}
-
-                            {/* Post Image */}
-                            {post.image && (
-                              <img
-                                src={post.image}
-                                alt="Post content"
-                                className="rounded-lg max-h-60 w-full object-cover mb-3"
-                              />
-                            )}
-
-                            <div className="flex items-center gap-4 mt-4 text-gray-500">
-                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                                <Eye className="w-4 h-4" />
-                                <span className="text-sm">View</span>
-                              </button>
-                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                                <MessageCircle className="w-4 h-4" />
-                                <span className="text-sm">Comment</span>
-                              </button>
-                              <button className="flex items-center gap-2 hover:text-blue-600 transition-colors">
-                                <Share2 className="w-4 h-4" />
-                                <span className="text-sm">Share</span>
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {posts.length > 3 && (
-                    <div className="text-center pt-4">
-                      <Button variant="outline">View all posts</Button>
-                    </div>
-                  )}
+                  {posts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onLike={handleLike}
+                      onComment={handleComment}
+                      onShare={handleShare}
+                    />
+                  ))}
                 </div>
               )}
             </div>
@@ -459,43 +473,6 @@ export default function ProfilePage() {
           {/* Sidebar */}
           <div className="space-y-8">
             <FollowingCard userId={userId} />
-
-            {/* Employment History */}
-            <div className="bg-white rounded-2xl shadow-sm p-6">
-              <h3 className="font-semibold text-gray-900 mb-6">
-                Employment History
-              </h3>
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      Lead Product Designer
-                    </div>
-                    <div className="text-sm text-gray-600">Google</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      2021 - Present
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      Senior UX Designer
-                    </div>
-                    <div className="text-sm text-gray-600">Facebook</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      2019 - 2021
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -39,9 +39,11 @@ model User {
   email            String     @unique
   emailVerified    DateTime?
   image            String?
+  coverImage       String?
   points           Int        @default(0)
   isOnline         Boolean    @default(false)
   lastSeen         DateTime   @default(now())
+  skills           String[]   @default([])
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   accounts         Account[]
