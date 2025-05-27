@@ -21,6 +21,7 @@ import { useSession } from "next-auth/react";
 
 import axios from "axios";
 import BidButton from "./ui/bidButton";
+import PostCardEditButton from "./postCardEditButton";
 
 export function PostCard({
   post,
@@ -137,13 +138,7 @@ export function PostCard({
               </p>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-          >
-            <MoreHorizontal size={16} />
-          </Button>
+          <PostCardEditButton />
         </div>
       </CardHeader>
 

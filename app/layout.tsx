@@ -7,6 +7,7 @@ import { Navbar } from "@/components/navbar";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Sidebar from "@/components/sidebar";
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default async function RootLayout({
         <Providers>
           <Navbar />
           <main className="flex-1 pt-16">{children}</main>
+          <Toaster />
         </Providers>
       </body>
     </html>

@@ -14,7 +14,6 @@ import {
   Home,
   User,
   BookOpen,
-  Bell,
   Moon,
   Search,
   Menu,
@@ -23,6 +22,27 @@ import {
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import NotificationButton from "./notification/notificationButton";
+
+import { Award, CircleDollarSign, Crown } from "lucide-react";
+
+const demoNotifications = [
+  {
+    id: 1,
+    icon: <Award className="text-green-600" size={18} />,
+    message: "Quiz Master Badge",
+  },
+  {
+    id: 2,
+    icon: <CircleDollarSign className="text-green-600" size={18} />,
+    message: "100 Bonus Points",
+  },
+  {
+    id: 3,
+    icon: <Crown className="text-green-600" size={18} />,
+    message: "Premium Access (1 week)",
+  },
+];
 
 export function Navbar() {
   const { data: session } = useSession();
@@ -105,17 +125,7 @@ export function Navbar() {
             >
               <Moon size={20} />
             </Button>
-
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-gray-100 relative"
-            >
-              <Bell size={20} />
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span>
-            </Button>
+            <NotificationButton demoNotifications={demoNotifications} />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
