@@ -9,16 +9,18 @@ import { CreatePostModal } from "@/components/create-post-modal";
 import { LearningRewards } from "@/components/learning-rewards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { PenTool, BookOpen, Zap, Target } from "lucide-react";
+import { PenTool, BookOpen, Zap, Target, Rocket } from "lucide-react";
 import { UserSuggestions } from "@/components/user-suggestions";
 import RightSidebarCard from "@/components/rightSidebarCard";
 import { Post } from "@/app/types/type";
+import { useToast } from "@/hooks/use-toast";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const { createPostModalOpen, setCreatePostModalOpen } = useAppContext();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -41,19 +43,48 @@ export default function HomePage() {
     }
   };
 
-  const handleCreatePost = async (content: string, image?: string) => {
+  const handleCreatePost = async (
+    content: { text: string; tags: string[]; link?: string },
+    image?: string
+  ) => {
     try {
+      const postContent = [
+        {
+          text: content.text,
+          tags: content.tags,
+          link: content.link,
+        },
+      ];
+
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content, image }),
+        body: JSON.stringify({
+          type: image ? "image" : "text",
+          content: postContent,
+          image,
+        }),
       });
 
       if (response.ok) {
+        toast({
+          title: "Success!",
+          description: "Your post has been created successfully.",
+          variant: "default",
+        });
         fetchPosts(); // Refresh posts
+      } else {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to create post");
       }
     } catch (error) {
       console.error("Error creating post:", error);
+      toast({
+        title: "Error",
+        description:
+          error instanceof Error ? error.message : "Failed to create post",
+        variant: "destructive",
+      });
     }
   };
 
@@ -108,13 +139,20 @@ export default function HomePage() {
           <div className="lg:col-span-8">
             {/* Create Post Button */}
             <Card className="mb-6">
-              <CardContent className="p-4">
+              <CardContent className="p-4 flex flex-row">
                 <Button
                   onClick={() => setCreatePostModalOpen(true)}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-blue-600 hover:bg-blue-700 rounded-r-none"
                 >
                   <PenTool size={16} className="mr-2" />
                   Post Update
+                </Button>
+                <Button
+                  onClick={() => setCreatePostModalOpen(true)}
+                  className="w-full bg-purple-500 hover:bg-purple-600 rounded-l-none"
+                >
+                  <Rocket size={16} className="mr-2" />
+                  Launch task
                 </Button>
               </CardContent>
             </Card>
@@ -178,6 +216,7 @@ export default function HomePage() {
       </div>
 
       <CreatePostModal
+        type="task || post"
         isOpen={createPostModalOpen}
         onClose={() => setCreatePostModalOpen(false)}
         onSubmit={handleCreatePost}

@@ -58,7 +58,8 @@ model User {
 
 model Post {
   id        String    @id @default(cuid())
-  content   String
+  type      String?   @default("post")
+  content   Json[]
   image     String?
   authorId  String
   createdAt DateTime  @default(now())

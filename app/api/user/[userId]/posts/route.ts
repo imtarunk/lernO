@@ -9,14 +9,62 @@ export async function GET(
   const posts = await prisma.post.findMany({
     where: { authorId: userId },
     orderBy: { createdAt: "desc" },
-    select: {
-      id: true,
-      content: true,
-      image: true,
-      authorId: true,
-      createdAt: true,
-      updatedAt: true,
+    include: {
+      author: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: userId,
+        },
+      },
+      comments: {
+        where: {
+          parentId: null,
+        },
+        include: {
+          User: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+          replies: {
+            include: {
+              User: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
-  return NextResponse.json(posts);
+
+  // Transform the posts to include isLiked status
+  const transformedPosts = posts.map((post) => ({
+    ...post,
+    isLiked: post.likes && post.likes.length > 0,
+    likes: undefined, // Remove the likes array since we only need the count
+  }));
+
+  return NextResponse.json(transformedPosts);
 }

@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useRouter } from "next/navigation";
 import { CommentSection } from "./comment-section";
 import { PostCardProps } from "@/app/types/type";
+import { LinkPreview } from "@/components/link-preview";
 
 export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
   const [isLiked, setIsLiked] = useState(post.isLiked || false);
@@ -25,6 +26,7 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
     }))
   );
   const router = useRouter();
+  console.log(post);
 
   const handleLike = async () => {
     try {
@@ -93,7 +95,11 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
   };
 
   return (
-    <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200">
+    <Card
+      className={`mb-4 overflow-hidden hover:shadow-md transition-shadow duration-200${
+        post.type === "task" ? " border-2 border-red-500" : ""
+      }`}
+    >
       <CardHeader className="pb-3 px-4 sm:px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -128,10 +134,55 @@ export function PostCard({ post, onLike, onComment, onShare }: PostCardProps) {
       </CardHeader>
 
       <CardContent className="px-4 sm:px-6">
-        <p className="mb-4 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
-          {post.content}
-        </p>
-
+        {/* Render content based on post type */}
+        {(post.type === "post" || post.type === "text") &&
+          Array.isArray(post.content) &&
+          post.content[0] && (
+            <div className="mb-4">
+              {post.content[0].text && (
+                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words mb-2">
+                  {post.content[0].text}
+                </p>
+              )}
+              {post.content[0].tags && post.content[0].tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {post.content[0].tags.map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {post.content[0].link && (
+                <LinkPreview url={post.content[0].link} />
+              )}
+            </div>
+          )}
+        {post.type === "task" &&
+          Array.isArray(post.content) &&
+          post.content[0] && (
+            <div className="mb-4">
+              {post.content[0].title && (
+                <h3 className="text-lg font-bold mb-1">
+                  {post.content[0].title}
+                </h3>
+              )}
+              {post.content[0].description && (
+                <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words mb-2">
+                  {post.content[0].description}
+                </p>
+              )}
+              {post.content[0].dueDate && (
+                <div className="text-xs text-gray-500 mb-2">
+                  Due: {new Date(post.content[0].dueDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          )}
+        {/* Render image if present */}
         {post.image && (
           <div className="relative aspect-video mb-4 rounded-lg overflow-hidden">
             <img

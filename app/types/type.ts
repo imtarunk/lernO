@@ -1,7 +1,8 @@
 export interface PostCardProps {
   post: {
     id: string;
-    content: string;
+    type: string;
+    content: any;
     image?: string;
     createdAt: Date;
     author: {
@@ -50,9 +51,22 @@ export interface PostCardProps {
   onShare: (postId: string) => void;
 }
 
+interface PostContent {
+  text?: string;
+  tags?: string[];
+  link?: string;
+  title?: string;
+  description?: string;
+  dueDate?: string;
+  points?: number;
+  bidAmount?: number;
+  requirements?: string[];
+}
+
 export interface Post {
   id: string;
-  content: string;
+  type: string;
+  content: PostContent[];
   image?: string;
   createdAt: Date;
   author: {

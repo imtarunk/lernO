@@ -1,0 +1,41 @@
+{
+  "id": "clx12345abcde",
+  "type": "post",
+  "content": [
+    {
+      "text": "Just finished building my portfolio site!",
+      "tags": ["#webdev", "#portfolio", "#react"],
+      "link": "https://myportfolio.com"
+    }
+  ],
+  "image": "https://example.com/image.jpg",
+  "authorId": "user123",
+  "createdAt": "2025-05-26T12:00:00.000Z",
+  "updatedAt": "2025-05-26T12:30:00.000Z",
+  "comments": [],
+  "likes": []
+}
+
+
+{
+  "id": "clx67890uvwxy",
+  "type": "task",
+  "content": [
+    {
+      "points": 100,
+      "expiry": "2025-06-01T23:59:59.000Z",
+      "bidAmount": 50,
+      "contents": {
+        "title": "Design a travel booking UI",
+        "description": "We need a simple UI/UX design for a travel booking app with home, search, and booking screens.",
+        "requirements": ["Figma design", "Responsive layout", "Modern look"]
+      }
+    }
+  ],
+  "image": null,
+  "authorId": "user456",
+  "createdAt": "2025-05-26T14:00:00.000Z",
+  "updatedAt": "2025-05-26T14:05:00.000Z",
+  "comments": [],
+  "likes": []
+}

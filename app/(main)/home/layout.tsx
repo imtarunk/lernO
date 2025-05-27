@@ -12,7 +12,7 @@ export default function HomeLayout({
   return (
     <div className="flex h-full">
       <Sidebar />
-      <main className="flex-1 pt-16 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1  px-4 md:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         {children}
       </main>
     </div>

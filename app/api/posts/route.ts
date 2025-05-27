@@ -89,11 +89,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { content, image } = await request.json();
+    const { type, content, image } = await request.json();
+
+    console.log("type:", type);
+    console.log("content:", content);
+    console.log("image:", image);
+
+    if (
+      !content ||
+      (Array.isArray(content) && content.some((item) => item === undefined))
+    ) {
+      return NextResponse.json({ error: "Invalid content" }, { status: 400 });
+    }
+
+    let normalizedContent = content;
+    if (!Array.isArray(content)) {
+      normalizedContent = [content];
+    }
 
     const post = await prisma.post.create({
       data: {
-        content,
+        type,
+        content: normalizedContent,
         image,
         authorId: session.user.id,
       },

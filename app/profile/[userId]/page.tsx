@@ -375,7 +375,7 @@ export default function ProfilePage() {
                             </span>
                           </div>
                           <p className="text-gray-800 leading-relaxed mb-3">
-                            {post.content}
+                            {post.content?.[0]?.text}
                           </p>
                           {post.image && (
                             <img
