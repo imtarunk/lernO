@@ -25,6 +25,7 @@ import { useState } from "react";
 import NotificationButton from "./notification/notificationButton";
 
 import { Award, CircleDollarSign, Crown } from "lucide-react";
+import { ModeToggle } from "./theam-togglebutton";
 
 const demoNotifications = [
   {
@@ -123,7 +124,7 @@ export function Navbar() {
               size="icon"
               className="rounded-full hover:bg-gray-100"
             >
-              <Moon size={20} />
+              <ModeToggle />
             </Button>
             <NotificationButton demoNotifications={demoNotifications} />
 

@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-import { Navbar } from "@/components/navbar";
+// import { Navbar } from "@/components/navbar";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import Sidebar from "@/components/sidebar";
+// import Sidebar from "@/components/sidebar";
 import { Toaster } from "react-hot-toast";
-
+import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -26,11 +26,18 @@ export default async function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} min-h-full bg-gray-50`}>
-        <Providers>
-          <Navbar />
-          <main className="flex-1 pt-16">{children}</main>
-          <Toaster />
-        </Providers>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Providers>
+            {/* <Navbar /> */}
+            <main>{children}</main>
+            <Toaster />
+          </Providers>
+        </ThemeProvider>
       </body>
     </html>
   );

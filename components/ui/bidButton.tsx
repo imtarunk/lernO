@@ -46,9 +46,16 @@ const BidButton = ({ satAmount }: BitButtonProps) => {
       const result = await window.webln.sendPayment(invoice);
       console.log("Payment result:", result);
       toast.success("Payment sent successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment failed:", error);
-      toast.error("Payment failed. Please try again.");
+      if (error.message?.includes("Limit exeeded")) {
+        toast.error(
+          "Payment limit exceeded. Please configure your Alby wallet limits at getalby.com/node/embrace_albyhub",
+          { duration: 5000 }
+        );
+      } else {
+        toast.error("Payment failed. Please try again.");
+      }
     }
   };
 
