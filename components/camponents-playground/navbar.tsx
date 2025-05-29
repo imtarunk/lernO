@@ -20,7 +20,7 @@ export default function Navbar() {
       {/* Logo */}
       <div className="flex items-center space-x-2">
         <img src="/logo.svg" alt="Galxe" className="w-6 h-6" />
-        <span className="text-xl font-semibold">Galxe</span>
+        <span className="text-xl font-semibold">CLAY</span>
       </div>
 
       {/* Menu */}
