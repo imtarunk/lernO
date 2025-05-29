@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import { useStore } from "@/lib/store";
 import { PostCard } from "@/components/post-card";
+import Loader from "@/components/ui/loader";
 
 const russoOne = Russo_One({ subsets: ["latin"], weight: "400" });
 

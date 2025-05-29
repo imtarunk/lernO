@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreateTaskModal } from "@/components/create-task-modal";
 import axios from "axios";
 import { useStore } from "@/lib/store";
+import Loader from "@/components/ui/loader";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -136,7 +137,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <Loader />
       </div>
     );
   }

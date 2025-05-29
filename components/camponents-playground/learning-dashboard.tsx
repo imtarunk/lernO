@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { Bell, Search } from "lucide-react";
+import Loader from "@/components/ui/loader";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -138,7 +139,7 @@ export default function LearningDashboard() {
   if (isLoading) {
     return (
       <div className="w-full min-h-screen bg-[#fafbfc] flex items-center justify-center">
-        <div className="text-lg text-gray-600">Loading...</div>
+        <Loader />
       </div>
     );
   }
@@ -293,7 +294,10 @@ export default function LearningDashboard() {
                     Most Popular
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="all">
+                <TabsContent
+                  value="all"
+                  className="overflow-y-auto max-h-[500px] scrollbar-hide"
+                >
                   <div className="flex flex-col gap-3">
                     {courses.map((course, i) => (
                       <div

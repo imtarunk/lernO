@@ -84,10 +84,38 @@ const config: Config = {
             height: "0",
           },
         },
+        dashArray: {
+          "0%": { strokeDasharray: "0 1 359 0" },
+          "50%": { strokeDasharray: "0 359 1 0" },
+          "100%": { strokeDasharray: "359 1 0 0" },
+        },
+        dashOffset: {
+          "0%": { strokeDashoffset: "365" },
+          "100%": { strokeDashoffset: "5" },
+        },
+        spinDashArray: {
+          "0%": { strokeDasharray: "270 90" },
+          "50%": { strokeDasharray: "0 360" },
+          "100%": { strokeDasharray: "270 90" },
+        },
+        spin: {
+          "0%": { rotate: "0deg" },
+          "12.5%": { rotate: "270deg" },
+          "25%": { rotate: "270deg" },
+          "37.5%": { rotate: "540deg" },
+          "50%": { rotate: "540deg" },
+          "62.5%": { rotate: "810deg" },
+          "75%": { rotate: "810deg" },
+          "87.5%": { rotate: "1080deg" },
+          "100%": { rotate: "1080deg" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        dash: "dashArray 2s ease-in-out infinite, dashOffset 2s linear infinite",
+        spinDash:
+          "spinDashArray 2s ease-in-out infinite, spin 8s ease-in-out infinite, dashOffset 2s linear infinite",
       },
     },
   },
