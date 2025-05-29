@@ -1,5 +1,8 @@
 import Navbar from "@/components/camponents-playground/navbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Russo_One } from "next/font/google";
+
+const russoOne = Russo_One({ subsets: ["latin"], weight: "400" });
 
 const PlaygroundLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -11,7 +14,7 @@ const PlaygroundLayout = ({ children }: { children: React.ReactNode }) => {
         disableTransitionOnChange
       >
         <Navbar />
-        {children}
+        <body className={`${russoOne.className} bg-black`}>{children}</body>
       </ThemeProvider>
     </div>
   );

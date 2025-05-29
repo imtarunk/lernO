@@ -4,18 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Award, Crown, Gift } from "lucide-react";
-import dynamic from "next/dynamic";
 import { useEffect } from "react";
+import { AlbyButton } from "../components/ui/albayButton";
 
 declare global {
   interface Window {
-    webln: {
-      enable: () => Promise<void>;
-      makeInvoice: (args: {
-        amount: number;
-        defaultMemo: string;
-      }) => Promise<{ paymentRequest: string }>;
-    };
+    webln:
+      | {
+          enable: () => Promise<void>;
+          sendPayment: (invoice: string) => Promise<{ preimage: string }>;
+        }
+      | undefined;
   }
 }
 
@@ -44,11 +43,6 @@ export function LearningRewards() {
       claimable: true,
     },
   ];
-
-  const AlbyButton = dynamic(
-    () => import("@getalby/bitcoin-connect-react").then((mod) => mod.Button),
-    { ssr: false }
-  );
 
   useEffect(() => {
     const loadProvider = async () => {
