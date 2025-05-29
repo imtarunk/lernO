@@ -9,6 +9,10 @@ import SectionDivider from "@/components/camponents-playground/sectionDivider";
 import GiveawayCard from "@/components/camponents-playground/card2"; // Assuming card2.jsx is your GiveawayCard component
 import JoinUsNowBanner from "@/components/camponents-playground/joinUs";
 import IdeasBanner from "@/components/camponents-playground/joinUs";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import { useStore } from "@/lib/store";
+import { PostCard } from "@/components/post-card";
 
 const russoOne = Russo_One({ subsets: ["latin"], weight: "400" });
 
@@ -72,10 +76,15 @@ export default function Home() {
     }, // Spring animation
   };
 
-  useEffect(() => {
-    // You could add a subtle parallax effect to a background image here
-    // or trigger more complex animations based on scroll position.
-  }, []);
+  // const { posts, setPosts, isLoading, setIsLoading } = useStore();
+
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <div className="text-lg text-gray-600">Loading...</div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <main

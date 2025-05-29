@@ -13,34 +13,52 @@ export async function GET(request: Request) {
       );
     }
 
-    const response = await fetch(url);
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (e) {
+      return NextResponse.json(
+        { error: "Invalid URL format" },
+        { status: 400 }
+      );
+    }
+
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; LinkPreviewBot/1.0)",
+      },
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: `Failed to fetch URL: ${response.statusText}` },
+        { status: response.status }
+      );
+    }
+
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // Extract metadata
     const title =
-      $('meta[property="og:title"]').attr("content") || $("title").text();
+      $('meta[property="og:title"]').attr("content") ||
+      $("title").text() ||
+      $("h1").first().text() ||
+      "";
+
     const description =
       $('meta[property="og:description"]').attr("content") ||
-      $('meta[name="description"]').attr("content");
-    const image = $('meta[property="og:image"]').attr("content");
-    const siteName = $('meta[property="og:site_name"]').attr("content");
-    const favicon =
-      $('link[rel="icon"]').attr("href") ||
-      $('link[rel="shortcut icon"]').attr("href");
+      $('meta[name="description"]').attr("content") ||
+      "";
 
-    // Handle relative URLs
-    const baseUrl = new URL(url);
-    const absoluteFavicon = favicon
-      ? new URL(favicon, baseUrl.origin).toString()
-      : `${baseUrl.origin}/favicon.ico`;
+    const image =
+      $('meta[property="og:image"]').attr("content") ||
+      $('meta[name="twitter:image"]').attr("content") ||
+      "";
 
     return NextResponse.json({
-      title,
-      description,
+      title: title.trim(),
+      description: description.trim(),
       image,
-      siteName,
-      favicon: absoluteFavicon,
     });
   } catch (error) {
     console.error("Error fetching link preview:", error);

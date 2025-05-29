@@ -7,6 +7,7 @@ import { Bell, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { useStore } from "@/lib/store";
 
 // Mock data types
 type CourseWithUser = {
@@ -70,18 +71,21 @@ function ProgressRing({ percent }: { percent: number }) {
 export default function LearningDashboard() {
   const { data: session, status } = useSession();
   const user = session?.user;
-  const [courses, setCourses] = useState<CourseWithUser[]>([]);
-  const [courseProgress, setCourseProgress] = useState<CourseProgress[]>([]);
-  const [allCourses, setAllCourses] = useState<CourseWithUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<{
-    users: any[];
-    posts: any[];
-    courses: any[];
-  }>({ users: [], posts: [], courses: [] });
-  const [mounted, setMounted] = useState(false);
+
+  // Get state and actions from store
+  const {
+    courses,
+    courseProgress,
+    setCourses,
+    setCourseProgress,
+    searchResults,
+    setSearchResults,
+    isLoading,
+    setIsLoading,
+  } = useStore();
 
   useEffect(() => {
     setMounted(true);
@@ -90,21 +94,29 @@ export default function LearningDashboard() {
   useEffect(() => {
     if (!user) return;
     const fetchUser = async () => {
-      const userData = await axios.get(`/api/user/${user.id}`);
-      setCourses(userData.data.Course);
-      setCourseProgress(userData.data.CourseProgress);
+      try {
+        setIsLoading(true);
+        const userData = await axios.get(`/api/user/${user.id}`);
+        setCourses(userData.data.Course);
+        setCourseProgress(userData.data.CourseProgress);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchUser();
     const fetchAllCourses = async () => {
-      const allCourses = await axios.get(`/api/courses`);
-      setAllCourses(allCourses.data);
-      console.log(allCourses.data, "allCourses this is from backend");
-      console.log(allCourses, "courses this is from frontend");
+      try {
+        const allCourses = await axios.get(`/api/courses`);
+        setCourses(allCourses.data);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      }
     };
     fetchAllCourses();
-    setIsLoading(false);
-  }, [user]);
+  }, [user, setCourses, setCourseProgress, setIsLoading]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -214,20 +226,20 @@ export default function LearningDashboard() {
           <div className="flex flex-col gap-6">
             {/* Current Course */}
             <Card className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white rounded-2xl shadow gap-4 sm:gap-6">
-              {allCourses.length > 0 ? (
+              {courses.length > 0 ? (
                 <>
                   <div className="flex items-center gap-4">
                     <img
-                      src={allCourses[0].image || ""}
-                      alt={allCourses[0].title}
+                      src={courses[0].image || ""}
+                      alt={courses[0].title}
                       className="w-10 h-10 rounded-full object-cover"
                     />
                     <div className="space-y-0.5 text-center sm:text-left">
                       <div className="font-bold text-base">
-                        {allCourses[0].title}
+                        {courses[0].title}
                       </div>
                       <div className="text-xs text-gray-500">
-                        by {allCourses[0].User.name}
+                        by {courses[0].User.name}
                       </div>
                     </div>
                   </div>
@@ -235,7 +247,7 @@ export default function LearningDashboard() {
                     <ProgressRing
                       percent={
                         courseProgress.find(
-                          (progress) => progress.courseId === allCourses[0].id
+                          (progress) => progress.courseId === courses[0].id
                         )?.progress || 0
                       }
                     />
@@ -283,7 +295,7 @@ export default function LearningDashboard() {
                 </TabsList>
                 <TabsContent value="all">
                   <div className="flex flex-col gap-3">
-                    {allCourses.map((course, i) => (
+                    {courses.map((course, i) => (
                       <div
                         key={i}
                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 gap-3 sm:gap-0"
@@ -320,7 +332,7 @@ export default function LearningDashboard() {
                 </TabsContent>
                 <TabsContent value="new">
                   <div className="flex flex-col gap-3">
-                    {allCourses.slice(0, 3).map((course, i) => (
+                    {courses.slice(0, 3).map((course, i) => (
                       <div
                         key={i}
                         className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 gap-3 sm:gap-0"
@@ -357,7 +369,7 @@ export default function LearningDashboard() {
                 </TabsContent>
                 <TabsContent value="top">
                   <div className="flex flex-col gap-3">
-                    {[...allCourses]
+                    {[...courses]
                       .sort((a, b) => b.isLiked - a.isLiked)
                       .map((course, i) => (
                         <div
@@ -396,7 +408,7 @@ export default function LearningDashboard() {
                 </TabsContent>
                 <TabsContent value="popular">
                   <div className="flex flex-col gap-3">
-                    {allCourses
+                    {courses
                       .slice()
                       .reverse()
                       .map((course, i) => (

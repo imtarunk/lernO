@@ -13,16 +13,29 @@ import RightSidebarCard from "@/components/rightSidebarCard";
 import { Post } from "@/app/types/type";
 import { useToast } from "@/hooks/use-toast";
 import { CreateTaskModal } from "@/components/create-task-modal";
-import { Switch } from "@/components/ui/switch";
+import axios from "axios";
+import { useStore } from "@/lib/store";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, setPosts, isLoading, setIsLoading } = useStore();
   const { createPostModalOpen, setCreatePostModalOpen } = useAppContext();
   const [createTaskModalOpen, setCreateTaskModalOpen] = useState(false);
   const { toast } = useToast();
   const [showOnlyTasks, setShowOnlyTasks] = useState(false);
+
+  const fetchPosts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await axios.get("/api/posts");
+      setPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -31,20 +44,8 @@ export default function HomePage() {
   }, [status, router]);
 
   useEffect(() => {
-    // Fetch posts
     fetchPosts();
-  }, []);
-
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch("/api/posts");
-      const data = await response.json();
-      console.log("data", data);
-      setPosts(data);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    }
-  };
+  }, [setPosts, setIsLoading]);
 
   const handleCreatePost = async (
     content: { text: string; tags: string[]; link?: string },
@@ -111,8 +112,10 @@ export default function HomePage() {
       const updatedPost = await response.json();
 
       // Update the posts array with the new post data
-      setPosts((currentPosts) =>
-        currentPosts.map((post) => (post.id === postId ? updatedPost : post))
+      setPosts((currentPosts: Post[]) =>
+        currentPosts.map(
+          (post: Post): Post => (post.id === postId ? updatedPost : post)
+        )
       );
     } catch (error) {
       console.error("Error updating post:", error);
@@ -130,10 +133,10 @@ export default function HomePage() {
     return true; // show all
   });
 
-  if (status === "loading") {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-gray-600">Loading...</div>
       </div>
     );
   }
