@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EyeOpenIcon, EyeClosedIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion"; // Import motion for animations
+import Logo from "@/components/logo";
 
 // --- Icon Components (for better readability) ---
 const GoogleIcon = () => (
@@ -179,9 +180,7 @@ export default function LoginPage() {
           className="mb-12"
         >
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-2xl">
-              <span className="text-white font-bold text-xl">C</span>
-            </div>
+            <Logo />
             <div>
               <h1 className="text-4xl font-bold text-white tracking-tight">
                 CLAY

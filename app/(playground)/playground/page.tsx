@@ -104,8 +104,8 @@ export default function Home() {
           transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           className="text-lg md:text-2xl text-gray-300 text-center mt-4 mb-8 max-w-2xl z-10"
         >
-          Discover cutting-edge games and experiences in the next generation of
-          Web3 gaming.
+          Discover cutting-edge courses and earn sats in the next generation of
+          Web3 education.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 50 }}
@@ -208,7 +208,7 @@ export default function Home() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ once: true }}
         >
-          CLAIM YOUR FREE GAMES
+          CLAIM YOUR FREE COURSES AND EARN SATS
         </motion.h2>
 
         <motion.div

@@ -23,6 +23,8 @@ export async function GET(
         isOnline: true,
         lastSeen: true,
         createdAt: true,
+        Course: true,
+        CourseProgress: true,
       },
     });
 

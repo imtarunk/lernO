@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Home, MessageCircle, Settings } from "lucide-react";
 import { useUserContext } from "@/components/user-context";
 import { useState } from "react";
+import Logo from "./logo";
 
 const navItems = [
   { label: "Home", icon: <Home className="w-6 h-6" />, href: "/home" },
@@ -26,11 +27,12 @@ export default function Sidebar() {
     <aside className="fixed top-0 left-0 h-screen w-20 bg-white border-none shadow-xl rounded-3xl m-2 flex flex-col items-center py-6 z-50">
       {/* Logo */}
       <div className="mb-10">
-        <img
+        {/* <img
           src="/logo.png"
           alt="Logo"
           className="w-12 h-12 rounded-full shadow"
-        />
+        /> */}
+        <Logo />
       </div>
       {/* Nav Icons */}
       <nav className="flex flex-col items-center gap-6 flex-1">

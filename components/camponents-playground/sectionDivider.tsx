@@ -1,6 +1,6 @@
 export default function SectionDivider({ text }: { text: string }) {
   return (
-    <div className="flex items-center justify-center w-full py-6 bg-gray-800 ">
+    <div className="flex items-center justify-center w-full py-6 bg-black/20 ">
       <div className="flex items-center w-full max-w-4xl px-4">
         {/* Left line */}
         <div className="flex-1 h-px bg-red-500 relative">
