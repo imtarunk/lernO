@@ -8,7 +8,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "./ui/button";
 import { MoreHorizontal } from "lucide-react";
-const PostCardEditButton = () => {
+
+interface PostCardEditButtonProps {
+  postId: string;
+  postAuthorId: string;
+  currentUserId?: string;
+  isPostLiked: boolean;
+  likes: number;
+  onLike: (postId: string, isLiked: boolean) => Promise<void>;
+  onComment: (content: string, parentId?: string) => Promise<void>;
+  onShare: () => void;
+}
+
+const PostCardEditButton = ({
+  postId,
+  postAuthorId,
+  currentUserId,
+  isPostLiked,
+  likes,
+  onLike,
+  onComment,
+  onShare,
+}: PostCardEditButtonProps) => {
   return (
     <div>
       <DropdownMenu>

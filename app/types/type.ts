@@ -47,9 +47,9 @@ export interface PostCardProps {
     }>;
     likes?: string[];
   };
-  onLike: (postId: string) => void;
-  onComment: (postId: string) => void;
-  onShare: (postId: string) => void;
+  onLike?: (postId: string, isLiked: boolean) => void;
+  onComment?: (postId: string) => void;
+  onShare?: (postId: string) => void;
   isPostLiked: boolean;
   likes: number;
 }

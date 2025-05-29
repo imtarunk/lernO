@@ -1,7 +1,12 @@
+"use client";
+
 // components/Navbar.jsx
-import { ChevronDown, Smartphone } from "lucide-react";
+
+import { ChevronDown, Link, Smartphone } from "lucide-react";
 import { Russo_One } from "next/font/google";
 import { AlbyButton } from "../../components/ui/albayButton";
+import { ExitIcon } from "@radix-ui/react-icons";
+import { useRouter } from "next/navigation";
 
 const russoOne = Russo_One({ subsets: ["latin"], weight: "400" });
 
@@ -13,6 +18,7 @@ const menuItems = [
 ];
 
 export default function Navbar() {
+  const router = useRouter();
   return (
     <nav
       className={`${russoOne.className} w-full bg-black text-white py-4 px-6 flex justify-between items-center border-b border-gray-800 fixed z-50`}
@@ -43,8 +49,8 @@ export default function Navbar() {
         <button className="px-3 py-1 rounded-md border border-gray-600 text-sm hover:border-gray-400">
           Network
         </button>
-        <div className="bg-gray-700 rounded-full p-1">
-          <Smartphone size={16} />
+        <div className="bg-black rounded-full p-3 cursor-pointer">
+          <ExitIcon className="text-white" onClick={() => router.push("/")} />
         </div>
         <AlbyButton />
       </div>
