@@ -24,12 +24,12 @@ export default async function RootLayout({
 }) {
   const session = await getServerSession(authOptions);
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="h-full light" style={{ colorScheme: "light" }}>
       <body className={`${inter.className} min-h-full bg-gray-50`}>
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <Providers>

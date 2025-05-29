@@ -26,6 +26,8 @@ import NotificationButton from "./notification/notificationButton";
 
 import { Award, CircleDollarSign, Crown } from "lucide-react";
 import { ModeToggle } from "./theam-togglebutton";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import axios from "axios";
 
 const demoNotifications = [
   {
@@ -50,6 +52,25 @@ export function Navbar() {
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Search modal state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState({
+    users: [],
+    posts: [],
+    courses: [],
+  });
+
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (query.length > 1) {
+      const res = await axios.get(`/api/search?q=${encodeURIComponent(query)}`);
+      setSearchResults(res.data);
+    } else {
+      setSearchResults({ users: [], posts: [], courses: [] });
+    }
+  };
+
   const handleSignOut = () => {
     signOut({ callbackUrl: "/login" });
   };
@@ -68,12 +89,14 @@ export function Navbar() {
             </Link>
 
             <div className="hidden md:block relative flex-1 max-w-xl">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="search"
                 placeholder="Search..."
-                className="w-full pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
+                className="w-full pl-10 bg-gray-50 border-gray-200 focus:border-blue-500 focus:ring-blue-500 cursor-pointer"
+                onFocus={() => setSearchOpen(true)}
+                readOnly
               />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             </div>
           </div>
 
@@ -204,6 +227,105 @@ export function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Search Modal */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="max-w-lg w-full p-0 bg-white rounded-2xl shadow-2xl">
+          <div className="p-6">
+            <Input
+              autoFocus
+              placeholder="Search anything..."
+              value={searchQuery}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full px-4 py-3 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+            <div className="mt-4 max-h-80 overflow-y-auto space-y-4">
+              {searchQuery.length > 1 && (
+                <>
+                  {/* Users */}
+                  {searchResults.users.length > 0 && (
+                    <div>
+                      <div className="font-bold text-xs text-gray-400 mb-1">
+                        Users
+                      </div>
+                      {searchResults.users.map((user: any) => (
+                        <div
+                          key={user.id}
+                          className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        >
+                          <img
+                            src={user.image || "/avatar.png"}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div>
+                            <div className="font-semibold">{user.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {user.email}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Posts */}
+                  {searchResults.posts.length > 0 && (
+                    <div>
+                      <div className="font-bold text-xs text-gray-400 mb-1 mt-2">
+                        Posts
+                      </div>
+                      {searchResults.posts.map((post: any) => (
+                        <div
+                          key={post.id}
+                          className="p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        >
+                          <div className="font-semibold">{post.type}</div>
+                          <div className="text-xs text-gray-500 truncate">
+                            {Array.isArray(post.content) &&
+                              post.content[0]?.text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* Courses */}
+                  {searchResults.courses.length > 0 && (
+                    <div>
+                      <div className="font-bold text-xs text-gray-400 mb-1 mt-2">
+                        Courses
+                      </div>
+                      {searchResults.courses.map((course: any) => (
+                        <div
+                          key={course.id}
+                          className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded cursor-pointer"
+                        >
+                          <img
+                            src={course.image || ""}
+                            className="w-8 h-8 rounded"
+                          />
+                          <div>
+                            <div className="font-semibold">{course.title}</div>
+                            <div className="text-xs text-gray-500">
+                              by {course.User?.name}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {/* No results */}
+                  {searchResults.users.length === 0 &&
+                    searchResults.posts.length === 0 &&
+                    searchResults.courses.length === 0 && (
+                      <div className="text-gray-400 text-center py-8">
+                        No results found.
+                      </div>
+                    )}
+                </>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }

@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Bell, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 // Mock data types
 type CourseWithUser = {
@@ -76,7 +76,16 @@ export default function LearningDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<CourseWithUser[]>([]);
+  const [searchResults, setSearchResults] = useState<{
+    users: any[];
+    posts: any[];
+    courses: any[];
+  }>({ users: [], posts: [], courses: [] });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -100,12 +109,17 @@ export default function LearningDashboard() {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     if (query.length > 1) {
-      const res = await axios.get(
-        `/api/courses?search=${encodeURIComponent(query)}`
-      );
-      setSearchResults(res.data);
+      try {
+        const res = await axios.get(
+          `/api/courses?search=${encodeURIComponent(query)}`
+        );
+        setSearchResults(res.data || { users: [], posts: [], courses: [] });
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults({ users: [], posts: [], courses: [] });
+      }
     } else {
-      setSearchResults([]);
+      setSearchResults({ users: [], posts: [], courses: [] });
     }
   };
 
@@ -503,46 +517,52 @@ export default function LearningDashboard() {
         </div>
       </div>
 
-      {/* Add the Dialog modal near the root of your JSX */}
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="max-w-lg w-full p-0 bg-white rounded-2xl shadow-2xl">
-          <div className="p-6">
-            <Input
-              autoFocus
-              placeholder="Search courses..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full px-4 py-3 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
-            />
-            <div className="mt-4 max-h-80 overflow-y-auto">
-              {searchResults.length === 0 && searchQuery.length > 1 && (
-                <div className="text-gray-400 text-center py-8">
-                  No results found.
-                </div>
-              )}
-              {searchResults.map((course) => (
-                <div
-                  key={course.id}
-                  className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition"
-                  onClick={() => setSearchOpen(false)}
-                >
-                  <img
-                    src={course.image || ""}
-                    alt={course.title}
-                    className="w-10 h-10 rounded"
-                  />
-                  <div>
-                    <div className="font-semibold">{course.title}</div>
-                    <div className="text-xs text-gray-500">
-                      by {course.User?.name}
+      {/* Only render the Dialog modal after mount to avoid hydration mismatch */}
+      {mounted && (
+        <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+          <DialogContent className="max-w-lg w-full p-0 bg-white rounded-2xl shadow-2xl">
+            <div className="p-6">
+              <DialogTitle className="sr-only">Search Courses</DialogTitle>
+              <Input
+                autoFocus
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full px-4 py-3 text-lg border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <div className="mt-4 max-h-80 overflow-y-auto">
+                {!searchResults?.users?.length &&
+                  !searchResults?.posts?.length &&
+                  !searchResults?.courses?.length &&
+                  searchQuery.length > 1 && (
+                    <div className="text-gray-400 text-center py-8">
+                      No results found.
+                    </div>
+                  )}
+                {searchResults?.courses?.map((course) => (
+                  <div
+                    key={course.id}
+                    className="flex items-center gap-4 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition"
+                    onClick={() => setSearchOpen(false)}
+                  >
+                    <img
+                      src={course.image || ""}
+                      alt={course.title}
+                      className="w-10 h-10 rounded"
+                    />
+                    <div>
+                      <div className="font-semibold">{course.title}</div>
+                      <div className="text-xs text-gray-500">
+                        by {course.User?.name}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
