@@ -17,6 +17,12 @@ import { Label } from "@/components/ui/label";
 import { EyeOpenIcon, EyeClosedIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion"; // Import motion for animations
 import Logo from "@/components/logo";
+import {
+  SolanaIcon,
+  EthereumIcon,
+  BitcoinIcon,
+  PolygonIcon,
+} from "@/components/icon/icon";
 
 // --- Icon Components (for better readability) ---
 const GoogleIcon = () => (
@@ -125,8 +131,10 @@ export default function LoginPage() {
             repeatType: "reverse",
             ease: "easeInOut",
           }}
-          className="absolute top-20 left-20 w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl animate-pulse"
-        ></motion.div>
+          className="absolute top-20 left-20 w-16 h-16  rounded-xl animate-pulse"
+        >
+          <SolanaIcon />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.5, x: 50, y: -50 }}
           animate={{ opacity: 0.3, scale: 1, x: 0, y: 0 }}
@@ -137,8 +145,10 @@ export default function LoginPage() {
             ease: "easeInOut",
             delay: 0.5,
           }}
-          className="absolute top-40 right-32 w-12 h-12 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full animate-bounce"
-        ></motion.div>
+          className="absolute top-40 right-16 w-24 h-24 rounded-full animate-bounce"
+        >
+          <EthereumIcon />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.5, x: -50, y: 50 }}
           animate={{ opacity: 0.25, scale: 1, x: 0, y: 0 }}
@@ -149,8 +159,10 @@ export default function LoginPage() {
             ease: "easeInOut",
             delay: 1,
           }}
-          className="absolute bottom-32 left-16 w-20 h-20 bg-gradient-to-br from-green-400 to-blue-500 rounded-2xl animate-pulse delay-1000"
-        ></motion.div>
+          className="absolute bottom-32 left-16 w-20 h-20 rounded-2xl animate-pulse delay-1000"
+        >
+          <EthereumIcon />
+        </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.5, x: 50, y: 50 }}
           animate={{ opacity: 0.2, scale: 1, x: 0, y: 0 }}
@@ -161,8 +173,10 @@ export default function LoginPage() {
             ease: "easeInOut",
             delay: 0.7,
           }}
-          className="absolute bottom-20 right-20 w-14 h-14 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl animate-bounce delay-500"
-        ></motion.div>
+          className="absolute bottom-20 right-20 w-14 h-14 rounded-xl animate-bounce delay-500"
+        >
+          <BitcoinIcon />
+        </motion.div>
       </div>
 
       {/* Left Panel - Brand & Features */}
