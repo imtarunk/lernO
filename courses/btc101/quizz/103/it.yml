@@ -1,0 +1,12 @@
+question: Qual è lo scopo della creazione di un piano di eredità per i nostri bitcoin?
+answer: Garantire che i nostri bitcoin saranno gestiti correttamente dopo la nostra morte.
+wrong_answers:
+  - Evitare le tasse sui nostri bitcoin.
+  - Diminuire il valore dei nostri bitcoin.
+  - Prevenire il furto dei nostri bitcoin.
+explanation: |
+  Un piano di eredità garantisce che i nostri bitcoin saranno
+  gestiti correttamente dopo la nostra morte. Può includere una
+  lettera scritta a mano che dettaglia i nostri beni, i loro metodi di accesso,
+  o i recapiti delle persone di fiducia da contattare.
+reviewed: true

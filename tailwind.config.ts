@@ -9,6 +9,7 @@ const config: Config = {
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    darkMode: "class", // Add this line!
     extend: {
       colors: {
         background: "hsl(var(--background))",

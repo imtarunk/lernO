@@ -1,0 +1,12 @@
+question: Qual è l'uso consigliato per un wallet mobile?
+answer: Utilizzarlo per le spese quotidiane.
+wrong_answers:
+  - Conservare risparmi a lungo termine.
+  - Conservare risparmi a medio termine.
+  - Conservare grandi quantità di bitcoin.
+explanation: |
+  Un wallet mobile è consigliato per le spese quotidiane perché
+  con esso è facile effettuare transazioni. Non è
+  consigliato per conservare grandi quantità o per risparmi a lungo
+  termine, perché è potenzialmente vulnerabile a minacce online.
+reviewed: true

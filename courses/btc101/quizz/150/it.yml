@@ -1,0 +1,11 @@
+question: Qual è il ruolo dei miner nella rete Bitcoin?
+answer: I miner proteggono la rete e aggiungono transazioni ai blocchi.
+wrong_answers:
+  - I miner creano nuovi bitcoin.
+  - I miner verificano l'identità degli utenti Bitcoin.
+  - I miner stabiliscono il prezzo del Bitcoin.
+explanation: >-
+  I miner utilizzano la loro potenza computazionale per risolvere problemi matematici complessi,
+  il che consente loro di aggiungere nuove transazioni alla blockchain. Questo processo protegge
+  la rete e ne mantiene l'integrità.
+reviewed: true

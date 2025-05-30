@@ -1,0 +1,12 @@
+question: Qual è un metodo per proteggere bitcoin a lungo termine?
+answer: Incidere la frase mnemonica su un materiale resistente come l'acciaio.
+wrong_answers:
+  - Conservarli in un hot wallet.
+  - Mantenerli su una piattaforma exchange.
+  - Condividere la frase mnemonica con un collega.
+explanation: |
+  Incidere la frase mnemonica su un materiale resistente come
+  l'acciaio crea un backup fisico delle chiavi che è
+  resistente sia ai danni causati dall'acqua che dal fuoco, garantendo così la protezione dei
+  bitcoin a lungo termine.
+reviewed: true

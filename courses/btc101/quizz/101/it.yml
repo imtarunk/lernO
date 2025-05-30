@@ -1,0 +1,11 @@
+question: Qual è il metodo standard per ripristinare un wallet?
+answer: Inserire la frase mnemonica in qualsiasi software compatibile.
+wrong_answers:
+  - Salvare la frase mnemonica in un file digitale.
+  - Scrivere la frase mnemonica su una lavagna.
+  - Condividere la frase mnemonica con un amico di fiducia.
+explanation: |
+  Il metodo standard per fare il backup della chiave privata in un
+  wallet Bitcoin è inserire la frase mnemonica in qualsiasi
+  software compatibile. Questo permette di ripristinare il wallet.
+reviewed: false

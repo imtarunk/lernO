@@ -105,3 +105,21 @@ export interface Post {
   likedUserIds?: string[];
   likes?: string[];
 }
+
+type CourseWithUser = {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  duration: string;
+  isCompleted: boolean;
+  isInProgress: boolean;
+  isLiked: number;
+  User: { name: string };
+};
+
+type CourseProgress = {
+  id: string;
+  courseId: string;
+  progress: number;
+};

@@ -1,0 +1,9 @@
+question: What advantage does running your own Bitcoin node provide?
+answer: Independence
+wrong_answers:
+  - Liquidity
+  - Centralization
+  - Speed
+explanation: |
+  Running your own node ensures independence from third parties and protects the privacy of your transactions.
+reviewed: false

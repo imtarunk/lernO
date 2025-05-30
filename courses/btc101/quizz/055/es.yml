@@ -1,0 +1,9 @@
+question: ¿Cuál fue aproximadamente la tasa de inflación en Alemania en octubre de 1923, en el punto álgido de la hiperinflación?
+answer: 29 500 %
+wrong_answers:
+  - 5 200 %
+  - 76 %
+  - 110 %
+explanation: |
+  El mes con la tasa de inflación más alta en Alemania fue octubre de 1923, alcanzando un pico del 29 500 %.
+reviewed: false

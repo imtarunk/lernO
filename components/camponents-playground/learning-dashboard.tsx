@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,25 +11,9 @@ import { useSession } from "next-auth/react";
 import axios from "axios";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useStore } from "@/lib/store";
-
-// Mock data types
-type CourseWithUser = {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  duration: string;
-  isCompleted: boolean;
-  isInProgress: boolean;
-  isLiked: number;
-  User: { name: string };
-};
-
-type CourseProgress = {
-  id: string;
-  courseId: string;
-  progress: number;
-};
+import { courses } from "../../courses/courses";
+import { UserCourse } from "@prisma/client";
+import { useRouter } from "next/navigation";
 
 function ProgressRing({ percent }: { percent: number }) {
   const r = 18;
@@ -75,12 +61,14 @@ export default function LearningDashboard() {
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userCourses, setUserCourses] = useState<UserCourse[]>([]);
+  const router = useRouter();
+  console.log(courses);
 
   // Get state and actions from store
   const {
-    courses,
-    courseProgress,
     setCourses,
+    courseProgress,
     setCourseProgress,
     searchResults,
     setSearchResults,
@@ -98,7 +86,7 @@ export default function LearningDashboard() {
       try {
         setIsLoading(true);
         const userData = await axios.get(`/api/user/${user.id}`);
-        setCourses(userData.data.Course);
+        setUserCourses(userData.data.UserCourse);
         setCourseProgress(userData.data.CourseProgress);
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -108,16 +96,7 @@ export default function LearningDashboard() {
     };
 
     fetchUser();
-    const fetchAllCourses = async () => {
-      try {
-        const allCourses = await axios.get(`/api/courses`);
-        setCourses(allCourses.data);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
-      }
-    };
-    fetchAllCourses();
-  }, [user, setCourses, setCourseProgress, setIsLoading]);
+  }, [user, setCourseProgress, setIsLoading]);
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
@@ -196,8 +175,8 @@ export default function LearningDashboard() {
           <div className="flex-1 flex flex-col sm:flex-row lg:flex-col gap-6">
             <div className="bg-white rounded-2xl shadow flex flex-1 flex-col items-center justify-center p-6 text-center">
               <div className="text-3xl font-extrabold text-black">
-                {courses.filter((course) => course.isCompleted).length > 0 ? (
-                  courses.filter((course) => course.isCompleted).length
+                {userCourses.length > 0 ? (
+                  userCourses.length
                 ) : (
                   <span className="text-sm font-extrabold text-black">
                     You have no courses completed
@@ -208,8 +187,8 @@ export default function LearningDashboard() {
             </div>
             <div className="bg-white rounded-2xl shadow flex flex-1 flex-col items-center justify-center p-6 text-center">
               <div className="text-3xl font-extrabold text-black">
-                {courses.filter((course) => course.isInProgress).length > 0 ? (
-                  courses.filter((course) => course.isInProgress).length
+                {userCourses.length > 0 ? (
+                  userCourses.length
                 ) : (
                   <span className="text-sm font-extrabold text-black">
                     You have no courses in progress
@@ -240,7 +219,7 @@ export default function LearningDashboard() {
                         {courses[0].title}
                       </div>
                       <div className="text-xs text-gray-500">
-                        by {courses[0].User.name}
+                        {/* by {user? .name} */}
                       </div>
                     </div>
                   </div>
@@ -315,7 +294,7 @@ export default function LearningDashboard() {
                               {course.title}
                             </div>
                             <div className="text-xs text-gray-500">
-                              by {course.User.name}
+                              by {user?.name || "Unknown"}
                             </div>
                           </div>
                         </div>
@@ -324,130 +303,20 @@ export default function LearningDashboard() {
                             <span>{course.duration}</span>
                           </div>
                           <div className="text-xs text-gray-700 flex items-center gap-1">
-                            <span>★</span> {course.isLiked}
+                            {/* <span>★</span> {course.isLiked} */}
                           </div>
-                          <Button className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow">
+                          <Button
+                            className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow cursor-pointer"
+                            onClick={() => {
+                              router.push(`/learning/course/${course.id}`);
+                              console.log(course.id);
+                            }}
+                          >
                             View course
                           </Button>
                         </div>
                       </div>
                     ))}
-                  </div>
-                </TabsContent>
-                <TabsContent value="new">
-                  <div className="flex flex-col gap-3">
-                    {courses.slice(0, 3).map((course, i) => (
-                      <div
-                        key={i}
-                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 gap-3 sm:gap-0"
-                      >
-                        <div className="flex items-center gap-4">
-                          <img
-                            src={course.image || ""}
-                            alt={course.title}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
-                          <div>
-                            <div className="font-bold text-sm text-black">
-                              {course.title}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              by {course.User.name}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 flex-wrap justify-end sm:justify-start">
-                          <div className="text-xs text-gray-700 flex items-center gap-1">
-                            <span>{course.duration}</span>
-                          </div>
-                          <div className="text-xs text-gray-700 flex items-center gap-1">
-                            <span>★</span> {course.isLiked}
-                          </div>
-                          <Button className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow">
-                            View course
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </TabsContent>
-                <TabsContent value="top">
-                  <div className="flex flex-col gap-3">
-                    {[...courses]
-                      .sort((a, b) => b.isLiked - a.isLiked)
-                      .map((course, i) => (
-                        <div
-                          key={i}
-                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 gap-3 sm:gap-0"
-                        >
-                          <div className="flex items-center gap-4">
-                            <img
-                              src={course.image || ""}
-                              alt={course.title}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <div className="font-bold text-sm text-black">
-                                {course.title}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                by {course.User.name}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 flex-wrap justify-end sm:justify-start">
-                            <div className="text-xs text-gray-700 flex items-center gap-1">
-                              <span>{course.duration}</span>
-                            </div>
-                            <div className="text-xs text-gray-700 flex items-center gap-1">
-                              <span>★</span> {course.isLiked}
-                            </div>
-                            <Button className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow">
-                              View course
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </TabsContent>
-                <TabsContent value="popular">
-                  <div className="flex flex-col gap-3">
-                    {courses
-                      .slice()
-                      .reverse()
-                      .map((course, i) => (
-                        <div
-                          key={i}
-                          className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded-xl px-4 py-3 shadow-sm border border-gray-100 gap-3 sm:gap-0"
-                        >
-                          <div className="flex items-center gap-4">
-                            <img
-                              src={course.image || ""}
-                              alt={course.title}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            <div>
-                              <div className="font-bold text-sm text-black">
-                                {course.title}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                by {course.User.name}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 flex-wrap justify-end sm:justify-start">
-                            <div className="text-xs text-gray-700 flex items-center gap-1">
-                              <span>{course.duration}</span>
-                            </div>
-                            <div className="text-xs text-gray-700 flex items-center gap-1">
-                              <span>★</span> {course.isLiked}
-                            </div>
-                            <Button className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow">
-                              View course
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
                   </div>
                 </TabsContent>
               </Tabs>

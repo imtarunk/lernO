@@ -1,0 +1,9 @@
+question: Qual è il meccanismo che garantisce l'aggiunta di un nuovo blocco alla blockchain ogni dieci minuti?
+answer: Aggiustamento della difficoltà.
+wrong_answers:
+  - Aggiustamento della velocità.
+  - Aggiustamento del tempo.
+  - Aggiustamento del blocco.
+explanation: |
+  Il meccanismo che garantisce l'aggiunta di un nuovo blocco alla blockchain ogni dieci minuti è l'aggiustamento della difficoltà. Questa avviene ogni 2016 blocchi, o circa ogni due settimane.
+reviewed: vero

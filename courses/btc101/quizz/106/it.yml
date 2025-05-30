@@ -1,0 +1,9 @@
+question: Perché è consigliabile evitare di lasciare i propri Bitcoin sulle piattaforme exchange?
+answer: Possono essere suscettibili ad attacchi hacker.
+wrong_answers:
+  - Le piattaforme exchange applicano commissioni casuali.
+  - Bitcoin perde valore su queste piattaforme.
+  - Gli exchange non sono istituzioni regolamentate.
+explanation: |
+  È consigliabile evitare di lasciare i propri Bitcoin sulle piattaforme exchange perché possono essere suscettibili ad attacchi hacker.
+reviewed: true
