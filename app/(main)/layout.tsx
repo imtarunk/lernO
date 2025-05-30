@@ -2,6 +2,7 @@ import type React from "react";
 import { Navbar } from "@/components/navbar";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import Sidebar from "@/components/sidebar";
 
 export default async function MainLayout({
   children,
@@ -12,6 +13,7 @@ export default async function MainLayout({
   return (
     <div className="flex flex-col h-screen">
       <Navbar />
+      <Sidebar />
       <main className="flex-1 pt-16">{children}</main>
     </div>
   );

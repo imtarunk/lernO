@@ -30,6 +30,7 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 import { SkillsDrawer } from "@/components/skills-drawer";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
+import Loader from "@/components/ui/loader";
 
 // Mock data for skills and associated people
 const skills = [
@@ -43,41 +44,6 @@ const skills = [
   "Web Development",
   "Integrated Design",
   "Front End",
-];
-
-const associatedPeople = [
-  {
-    id: 1,
-    name: "Ahamd Ekstrom Bothman",
-    role: "Future Program Designer",
-    avatar:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
-    company: "Google",
-  },
-  {
-    id: 2,
-    name: "Sheldon Langosh",
-    role: "Dynamic Directives Architect",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=40&h=40&fit=crop&crop=face",
-    company: "Facebook",
-  },
-  {
-    id: 3,
-    name: "Jeremy Crist",
-    role: "Lead Configuration Architect",
-    avatar:
-      "https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=40&h=40&fit=crop&crop=face",
-    company: "GitHub",
-  },
-  {
-    id: 4,
-    name: "Wilbur Kohler",
-    role: "Future Applications Consultant",
-    avatar:
-      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=40&h=40&fit=crop&crop=face",
-    company: "Microsoft",
-  },
 ];
 
 interface PostContent {
@@ -233,7 +199,11 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    return <div>User not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   const isOwnProfile = session?.user?.id === userId;
@@ -290,13 +260,9 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                       <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                        <h1 className="text-3xl font-bold text-white mb-1">
                           {user?.name}
                         </h1>
-                        <div className="flex items-center gap-2 text-gray-600 mb-2">
-                          <MapPin className="w-4 h-4" />
-                          <span>Los Angeles, United States</span>
-                        </div>
                       </div>
                       <div className="flex gap-3 sm:ml-auto">
                         {!isOwnProfile && (
@@ -463,6 +429,8 @@ export default function ProfilePage() {
                       onLike={handleLike}
                       onComment={handleComment}
                       onShare={handleShare}
+                      isPostLiked={post.isLiked || false}
+                      likes={post._count.likes}
                     />
                   ))}
                 </div>
