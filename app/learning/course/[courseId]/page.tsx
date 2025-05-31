@@ -9,10 +9,13 @@ import {
   FaMoon,
   FaTimes,
 } from "react-icons/fa";
-import { redirect, useParams } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { courses } from "@/courses/courses";
 import Main from "@/components/learning/main";
 import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import axios from "axios";
 
 interface Lesson {
   id?: string;
@@ -64,9 +67,14 @@ const articles = [
 export default function CoursePage() {
   const session = useSession();
   const params = useParams();
+  const router = useRouter();
   const courseId = Array.isArray(params?.courseId)
     ? params.courseId[0]
     : params?.courseId;
+
+  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [courseProgress, setCourseProgress] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const course = courses.find((course) => course.id === courseId) as
     | Course
@@ -106,8 +114,94 @@ export default function CoursePage() {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (!session.data?.user?.id || !courseId) return;
+
+      try {
+        const response = await axios.get(
+          `/api/user-courses?userId=${session.data.user.id}&courseId=${courseId}`
+        );
+        if (response.data.length > 0) {
+          setIsEnrolled(true);
+          // Get course progress
+          const progressResponse = await axios.get(
+            `/api/course-progress?userId=${session.data.user.id}&courseId=${courseId}`
+          );
+          if (progressResponse.data) {
+            setCourseProgress(progressResponse.data.progress);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking enrollment:", error);
+      }
+    };
+
+    checkEnrollment();
+  }, [session.data?.user?.id, courseId]);
+
+  useEffect(() => {
+    return () => {
+      if (session.data?.user?.id && courseId && isEnrolled) {
+        const completedLessons = lessons.filter(
+          (l) => l.status === "completed"
+        ).length;
+        const finalProgress = Math.round(
+          (completedLessons / lessons.length) * 100
+        );
+
+        axios
+          .put("/api/course-progress", {
+            userId: session.data.user.id,
+            courseId: courseId,
+            progress: finalProgress,
+          })
+          .catch((error) => {
+            console.error("Error updating progress on unmount:", error);
+          });
+      }
+    };
+  }, [session.data?.user?.id, courseId, isEnrolled, lessons]);
+
+  const handleEnroll = async () => {
+    if (!session.data?.user?.id || !courseId) return;
+
+    setIsLoading(true);
+    try {
+      await axios.post("/api/user-courses", {
+        userId: session.data.user.id,
+        courseId: courseId,
+      });
+      setIsEnrolled(true);
+      setCourseProgress(0);
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUpdateProgress = async (progress: number) => {
+    if (!session.data?.user?.id || !courseId) return;
+
+    try {
+      await axios.put("/api/course-progress", {
+        userId: session.data.user.id,
+        courseId: courseId,
+        progress,
+      });
+      setCourseProgress(progress);
+    } catch (error) {
+      console.error("Error updating progress:", error);
+    }
+  };
+
   const toggleDarkMode = () => {
     setIsDarkMode((prev) => !prev);
+  };
+
+  const handleAddToCourse = () => {
+    router.push(`/learning/course/${courseId}/add-lesson`);
   };
 
   const handleLessonClick = (lesson: Lesson) => {
@@ -204,26 +298,39 @@ export default function CoursePage() {
       {/* Sidebar */}
       <aside className="w-full md:w-80 lg:w-96 bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 flex flex-col gap-6 sticky top-4 h-fit max-h-[calc(100vh-32px)] overflow-y-auto custom-scrollbar">
         {/* Progress */}
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold text-gray-700 dark:text-white text-lg">
-              Your Study Progress
-            </span>
-            <span className="text-sm text-blue-600 dark:text-blue-400 font-bold">
-              20%
-            </span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
-            <div
-              className="bg-blue-500 h-2.5 rounded-full"
-              style={{ width: "20%" }}
-            ></div>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Great Job! 🎉 You're well on your way to becoming a certified{" "}
-            {course?.title}. Finish strong!
-          </p>
-        </div>
+        {isEnrolled ? (
+          <>
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="font-semibold text-gray-700 dark:text-white text-lg">
+                  Your Study Progress
+                </span>
+                <span className="text-sm text-blue-600 dark:text-blue-400 font-bold">
+                  {courseProgress}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  className="bg-blue-500 h-2.5 rounded-full"
+                  style={{ width: `${courseProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                {courseProgress === 100
+                  ? "Congratulations! 🎉 You've completed the course!"
+                  : `Great Job! 🎉 You're ${courseProgress}% through the course. Keep going!`}
+              </p>
+            </div>
+          </>
+        ) : (
+          <Button
+            className="w-full"
+            onClick={handleEnroll}
+            disabled={isLoading}
+          >
+            {isLoading ? "Enrolling..." : "Enroll in Course"}
+          </Button>
+        )}
 
         {/* Lessons */}
         <div>
@@ -240,50 +347,51 @@ export default function CoursePage() {
             {lessons.map((lesson, idx) => (
               <li
                 key={lesson.id || idx}
-                onClick={() => handleLessonClick(lesson)}
-                className={`flex items-start gap-4 p-4 rounded-xl cursor-pointer transition-all duration-200
-                  ${
-                    currentLesson?.title === lesson.title
-                      ? "bg-blue-50 border-2 border-blue-400 text-blue-800 shadow-md dark:bg-blue-900 dark:border-blue-700 dark:text-blue-200"
-                      : lesson.status === "completed"
-                      ? "bg-green-50 border-2 border-green-400 text-green-800 opacity-90 dark:bg-green-900 dark:border-green-700 dark:text-green-200"
-                      : lesson.status === "locked"
-                      ? "bg-gray-100 border-2 border-gray-200 text-gray-600 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
-                      : "bg-gray-100 border-2 border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                className={`p-4 rounded-lg cursor-pointer transition-colors ${
+                  lesson.status === "completed"
+                    ? "bg-green-50 dark:bg-green-900/20"
+                    : lesson.status === "current"
+                    ? "bg-blue-50 dark:bg-blue-900/20"
+                    : "bg-gray-50 dark:bg-gray-700/50"
+                }`}
+                onClick={() => {
+                  if (isEnrolled) {
+                    handleLessonClick(lesson);
+                    // Update progress based on completed lessons
+                    const completedLessons = lessons.filter(
+                      (l) => l.status === "completed"
+                    ).length;
+                    const newProgress = Math.round(
+                      (completedLessons / lessons.length) * 100
+                    );
+                    handleUpdateProgress(newProgress);
+                  } else {
+                    // Show enrollment prompt
+                    alert("Please enroll in the course first!");
                   }
-                `}
+                }}
               >
-                <div className="flex-shrink-0 mt-0.5">
-                  {currentLesson?.title === lesson.title && (
-                    <FaPauseCircle className="text-blue-500 dark:text-blue-400 text-xl" />
-                  )}
-                  {lesson.status === "completed" && (
-                    <FaCheckCircle className="text-green-500 dark:text-green-400 text-xl" />
-                  )}
-                  {lesson.status === "locked" && (
-                    <FaLock className="text-gray-400 dark:text-gray-500 text-xl" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div
-                    className={`font-semibold text-base ${
-                      lesson.status === "locked"
-                        ? "text-gray-500 dark:text-gray-400"
-                        : "text-gray-800 dark:text-white"
-                    }`}
-                  >
-                    {idx + 1}. {lesson.title}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-gray-900 dark:text-white">
+                      {lesson.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {lesson.duration}
+                    </p>
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {lesson.duration} &bull;{" "}
-                    {lesson.type === "video" ? "Video Lesson" : "Article"}
+                  <div className="flex items-center gap-2">
+                    {lesson.status === "completed" && (
+                      <FaCheckCircle className="w-5 h-5 text-green-500" />
+                    )}
+                    {lesson.status === "current" && (
+                      <FaPauseCircle className="w-5 h-5 text-blue-500" />
+                    )}
+                    {lesson.status === "locked" && (
+                      <FaLock className="w-5 h-5 text-gray-400" />
+                    )}
                   </div>
                 </div>
-                {currentLesson?.title === lesson.title && (
-                  <span className="ml-auto text-blue-500 dark:text-blue-400 text-lg">
-                    ▶
-                  </span>
-                )}
               </li>
             ))}
           </ul>

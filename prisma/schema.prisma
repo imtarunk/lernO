@@ -155,4 +155,6 @@ model CourseProgress {
   updatedAt DateTime   @updatedAt
   Course    UserCourse @relation(fields: [courseId], references: [id])
   User      User       @relation(fields: [userId], references: [id])
+
+  @@unique([courseId, userId])
 }

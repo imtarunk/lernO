@@ -14,6 +14,7 @@ import { useStore } from "@/lib/store";
 import { courses } from "../../courses/courses";
 import { UserCourse } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 function ProgressRing({ percent }: { percent: number }) {
   const r = 18;
@@ -56,7 +57,7 @@ function ProgressRing({ percent }: { percent: number }) {
 }
 
 export default function LearningDashboard() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const user = session?.user;
   const [mounted, setMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -163,10 +164,9 @@ export default function LearningDashboard() {
               </p>
             </div>
             <img
-              src="/boy.png"
+              src="/boy.gif"
+              className="absolute right-5 bottom-0 h-full object-cover bg-transparent"
               alt="Waving character"
-              // Adjusted image positioning and sizing to replicate the desired look
-              className="absolute right-5 bottom-0 h-full object-cover"
               style={{ height: "115%", width: "auto", maxHeight: "none" }}
             />
           </div>
@@ -246,37 +246,102 @@ export default function LearningDashboard() {
             {/* Courses List with Tabs */}
             <Card className="bg-white rounded-2xl shadow p-6">
               <div className="font-bold text-lg mb-2">Courses</div>
-              <Tabs defaultValue="all">
+              <Tabs defaultValue="recent" className="w-full">
                 <TabsList className="mb-4 bg-transparent p-0 gap-6 overflow-x-auto whitespace-nowrap justify-start">
+                  <TabsTrigger
+                    value="recent"
+                    className="font-bold text-black data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:decoration-2 data-[state=active]:decoration-black"
+                  >
+                    Recent Courses
+                  </TabsTrigger>
                   <TabsTrigger
                     value="all"
                     className="font-bold text-black data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:decoration-2 data-[state=active]:decoration-black"
                   >
                     All Courses
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="new"
-                    className="font-bold text-black data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:decoration-2 data-[state=active]:decoration-black"
-                  >
-                    The Newest
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="top"
-                    className="font-bold text-black data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:decoration-2 data-[state=active]:decoration-black"
-                  >
-                    Top Rated
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="popular"
-                    className="font-bold text-black data-[state=active]:underline data-[state=active]:underline-offset-4 data-[state=active]:decoration-2 data-[state=active]:decoration-black"
-                  >
-                    Most Popular
-                  </TabsTrigger>
                 </TabsList>
-                <TabsContent
-                  value="all"
-                  className="overflow-y-auto max-h-[500px] scrollbar-hide"
-                >
+
+                <TabsContent value="recent">
+                  <div className="flex flex-col gap-4">
+                    {userCourses.length === 0 ? (
+                      <div className="text-center py-8">
+                        <p className="text-gray-600 mb-4">
+                          You haven't enrolled in any courses yet
+                        </p>
+                        <Button onClick={() => router.push("/courses")}>
+                          Browse Courses
+                        </Button>
+                      </div>
+                    ) : (
+                      userCourses
+                        .sort(
+                          (a, b) =>
+                            new Date(b.createdAt).getTime() -
+                            new Date(a.createdAt).getTime()
+                        )
+                        .slice(0, 5)
+                        .map((userCourse) => {
+                          const course = courses.find(
+                            (c) => c.id === userCourse.courseId
+                          );
+                          if (!course) return null;
+
+                          const progress =
+                            courseProgress.find((p) => p.courseId === course.id)
+                              ?.progress || 0;
+
+                          return (
+                            <div
+                              key={userCourse.id}
+                              className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                              onClick={() =>
+                                router.push(`/learning/course/${course.id}`)
+                              }
+                            >
+                              <div className="flex items-center gap-4">
+                                <img
+                                  src={course.image || ""}
+                                  alt={course.title}
+                                  className="w-12 h-12 rounded-lg object-cover"
+                                />
+                                <div>
+                                  <h3 className="font-semibold text-gray-900">
+                                    {course.title}
+                                  </h3>
+                                  <p className="text-sm text-gray-500">
+                                    {userCourse.isCompleted
+                                      ? "Completed"
+                                      : "In Progress"}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className="bg-blue-500 h-2 rounded-full"
+                                    style={{ width: `${progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-sm font-medium text-gray-700">
+                                  {progress}%
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  Continue
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="all">
                   <div className="flex flex-col gap-3">
                     {courses.map((course, i) => (
                       <div
@@ -309,7 +374,6 @@ export default function LearningDashboard() {
                             className="bg-black text-white px-5 py-1.5 rounded-md text-xs font-semibold shadow cursor-pointer"
                             onClick={() => {
                               router.push(`/learning/course/${course.id}`);
-                              console.log(course.id);
                             }}
                           >
                             View course
